@@ -1,0 +1,15 @@
+// Minimal preset: one captcha for everyone except mods.
+[
+  {
+    "name": "captcha-canvas-v3",
+    "description": "Solve a captcha to post.",
+    "options": {
+      "characters": "6",
+      "width": "280",
+      "height": "96"
+    },
+    "exclude": [
+      { "role": ["moderator", "admin", "owner"] }
+    ]
+  }
+]

@@ -1,0 +1,80 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.count {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.empty {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gridHead {
+  display: none;
+}
+
+.rowGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+  gap: 6px;
+}
+
+.keyInput {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.valueInput {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.hint {
+  padding-left: 4px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.addBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hintSelect {
+  width: auto;
+}

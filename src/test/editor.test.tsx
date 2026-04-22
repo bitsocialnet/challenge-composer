@@ -1,0 +1,66 @@
+import { describe, expect, it, beforeEach, vi } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { StrictMode } from "react";
+import { App } from "../App.tsx";
+import { SettingsProvider } from "../state/useSettingsStore.ts";
+
+function renderApp() {
+  return render(
+    <StrictMode>
+      <SettingsProvider initialState={[]}>
+        <App />
+      </SettingsProvider>
+    </StrictMode>
+  );
+}
+
+describe("editor", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.location.hash = "";
+    vi.stubGlobal("confirm", vi.fn().mockReturnValue(true));
+  });
+
+  it("adds a challenge and shows it in the JSON preview", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(screen.getByRole("button", { name: /add challenge/i }));
+    const previewCode = document.querySelector("pre code");
+    expect(previewCode?.textContent ?? "").toMatch(/captcha-canvas-v3/);
+    expect(screen.getByText(/#1/)).toBeInTheDocument();
+  });
+
+  it("adds a challenge option via the suggested dropdown", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(screen.getByRole("button", { name: /add challenge/i }));
+    const card = screen.getByText(/#1/).closest("article");
+    if (!card) throw new Error("card not found");
+    const suggestSelects = within(card).getAllByRole("combobox");
+    const hintSelect = suggestSelects.find((s) => s.querySelector("option[value='characters']"));
+    if (!hintSelect) throw new Error("hint select not found");
+    await user.selectOptions(hintSelect, "characters");
+    const preview = document.querySelector("pre code")?.textContent ?? "";
+    expect(preview).toMatch(/"characters":/);
+  });
+
+  it("adds then removes an exclude group", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(screen.getByRole("button", { name: /add challenge/i }));
+    await user.click(screen.getByRole("button", { name: /add exclude group/i }));
+    expect(screen.getByText(/group 1/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /remove group/i }));
+    expect(screen.queryByText(/group 1/i)).not.toBeInTheDocument();
+  });
+
+  it("removes a challenge after confirmation", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(screen.getByRole("button", { name: /add challenge/i }));
+    expect(screen.getByText(/#1/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^remove$/i }));
+    expect(screen.queryByText(/#1/)).not.toBeInTheDocument();
+  });
+});

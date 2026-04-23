@@ -59,7 +59,10 @@ export function OptionsEditor({ challengeIndex, challenge }: OptionsEditorProps)
   return (
     <section className={styles.section}>
       <header className={styles.header}>
-        <h3 className={styles.title}>Options</h3>
+        <div className={styles.titleWrap}>
+          <h3 className="sectionLabel">Options</h3>
+          <span className={styles.titleNote}>hidden from user</span>
+        </div>
         <span className={styles.count}>{entries.length} key{entries.length === 1 ? "" : "s"}</span>
       </header>
 

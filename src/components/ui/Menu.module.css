@@ -1,0 +1,68 @@
+.root {
+  position: relative;
+  display: inline-block;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  padding: 4px;
+  z-index: 20;
+}
+
+.alignRight {
+  left: auto;
+  right: 0;
+}
+
+.section + .section {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-faint);
+}
+
+.sectionHeader {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 8px 2px;
+  font-weight: var(--weight-semi);
+}
+
+.item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--font-md);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.item:hover:not(:disabled),
+.itemFocused {
+  background: var(--bg-elev);
+}
+
+.item:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.empty {
+  padding: 8px;
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  text-align: center;
+}

@@ -1,0 +1,88 @@
+.numberInput {
+  width: 100px;
+  padding: 4px 8px;
+  height: var(--row-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.shortInput {
+  width: 80px;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.unitSelect {
+  width: auto;
+  padding: 4px 8px;
+  height: var(--row-h);
+}
+
+.modToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.modToggle input {
+  width: auto;
+  cursor: pointer;
+  margin: 0;
+}
+
+.pubGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.pubCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--font-sm);
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pubCheck input {
+  width: auto;
+  cursor: pointer;
+  margin: 0;
+}
+
+.reputationForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+}
+
+.reputationRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.reputationLabel {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  min-width: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reputationChipWrap {
+  flex: 1;
+  min-width: 200px;
+}

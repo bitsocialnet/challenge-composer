@@ -49,7 +49,7 @@ describe("editor", () => {
     const user = userEvent.setup();
     renderApp();
     await user.click(screen.getByRole("button", { name: /add challenge/i }));
-    await user.click(screen.getByRole("button", { name: /add exclude group/i }));
+    await user.click(screen.getByRole("button", { name: /add bypass group/i }));
     expect(screen.getByText(/group 1/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /remove group/i }));
     expect(screen.queryByText(/group 1/i)).not.toBeInTheDocument();
@@ -71,5 +71,35 @@ describe("editor", () => {
     expect(screen.getByText(/#1/)).toBeInTheDocument();
     const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
     expect(nameInput.value).toBe("text-math");
+  });
+
+  it("collapses and expands a challenge row", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(screen.getByRole("button", { name: /add challenge/i }));
+    const article = screen.getByRole("article");
+    const expandedToggle = within(article).getByRole("button", { expanded: true });
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    await user.click(expandedToggle);
+    expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument();
+    const collapsedToggle = within(article).getByRole("button", { expanded: false });
+    await user.click(collapsedToggle);
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+  });
+
+  it("moves a challenge down with the Move down button", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    fireEvent.change(previewEditor, { target: { value: '[{"name":"alpha"},{"name":"beta"}]' } });
+    const moveUpButtons = screen.getAllByRole("button", { name: /move up/i });
+    expect(moveUpButtons[0]).toBeDisabled();
+    expect(moveUpButtons[1]).not.toBeDisabled();
+    const moveDownButtons = screen.getAllByRole("button", { name: /move down/i });
+    expect(moveDownButtons[0]).not.toBeDisabled();
+    expect(moveDownButtons[1]).toBeDisabled();
+    await user.click(moveDownButtons[0]!);
+    const updated = previewEditor.value;
+    expect(updated.indexOf("beta")).toBeLessThan(updated.indexOf("alpha"));
   });
 });

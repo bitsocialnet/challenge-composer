@@ -1,3 +1,5 @@
+@import "./tokens.css";
+
 :root {
   --bg: #0e1116;
   --bg-raised: #161b22;
@@ -78,6 +80,35 @@ button.danger {
 button.danger:hover {
   background: var(--danger-muted);
   color: #fff;
+}
+
+button.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+button.ghost:hover {
+  background: var(--bg-elev);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+button.subtle {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text);
+}
+
+button.subtle:hover {
+  background: var(--bg-elev);
+  border-color: var(--border);
+}
+
+button.sm {
+  padding: 2px 8px;
+  font-size: var(--font-xs);
+  border-radius: var(--radius-sm);
 }
 
 input,

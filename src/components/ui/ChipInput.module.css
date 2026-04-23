@@ -1,0 +1,79 @@
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  padding: 3px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  min-height: var(--row-h);
+  align-items: center;
+  cursor: text;
+}
+
+.wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(68, 147, 248, 0.25);
+}
+
+.mono .chipLabel,
+.mono .input {
+  font-family: var(--font-mono);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 2px 1px 6px;
+  background: var(--accent-faint);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+.chipLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.remove {
+  all: unset;
+  cursor: pointer;
+  color: var(--text-muted);
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.remove:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.input {
+  flex: 1;
+  min-width: 80px;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0 4px;
+  font-size: var(--font-sm);
+  color: var(--text);
+  width: auto;
+}
+
+.input:focus {
+  box-shadow: none;
+  border: none;
+}

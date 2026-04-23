@@ -1,0 +1,47 @@
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+}
+
+.connector,
+.connectorSpacer {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: var(--weight-semi);
+  min-width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.connectorSpacer {
+  visibility: hidden;
+}
+
+.label {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  padding: 6px 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-faint);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: var(--weight-med);
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+}
+
+.widget {
+  flex: 1;
+  min-width: 160px;
+}
+
+.remove {
+  align-self: flex-start;
+  padding: 4px 6px;
+}

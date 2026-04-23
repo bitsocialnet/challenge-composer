@@ -1,0 +1,36 @@
+:root {
+  --font-xs: 11px;
+  --font-sm: 12.5px;
+  --font-md: 14px;
+  --font-lg: 16px;
+  --font-xl: 19px;
+  --weight-reg: 400;
+  --weight-med: 500;
+  --weight-semi: 600;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+
+  --accent-faint: rgba(68, 147, 248, 0.12);
+  --accent-border: rgba(68, 147, 248, 0.35);
+  --danger-faint: rgba(248, 81, 73, 0.12);
+  --text-strong: #f0f6fc;
+  --border-faint: #21262d;
+
+  --row-h: 32px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+.sectionLabel {
+  font-size: var(--font-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: var(--weight-semi);
+  margin: 0;
+}

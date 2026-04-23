@@ -73,6 +73,16 @@ function cleanExclude(e: ChallengeExclude): ChallengeExclude {
   if (next.address && next.address.length === 0) delete next.address;
   if (next.challenges && next.challenges.length === 0) delete next.challenges;
   if (next.publicationType && Object.keys(next.publicationType).length === 0) delete next.publicationType;
+  if (next.community) {
+    const c = next.community;
+    const hasAddresses = Array.isArray(c.addresses) && c.addresses.length > 0;
+    const hasOther =
+      typeof c.maxCommentCids === "number" ||
+      typeof c.postScore === "number" ||
+      typeof c.replyScore === "number" ||
+      typeof c.firstCommentTimestamp === "number";
+    if (!hasAddresses && !hasOther) delete next.community;
+  }
   return next;
 }
 

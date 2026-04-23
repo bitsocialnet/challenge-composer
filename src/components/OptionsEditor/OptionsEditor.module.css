@@ -1,23 +1,28 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
+  gap: var(--sp-2);
+  border-top: 1px solid var(--border-faint);
+  padding-top: var(--sp-3);
 }
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+  gap: var(--sp-2);
 }
 
-.title {
-  margin: 0;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.titleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.titleNote {
   color: var(--text-muted);
+  font-size: var(--font-xs);
+  font-style: italic;
 }
 
 .count {

@@ -1,0 +1,43 @@
+.group {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.groupLabel {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: var(--weight-semi);
+}
+
+.emptyGroup {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  margin: 0;
+  padding: var(--sp-2) 0;
+}
+
+.conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.addBar {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: var(--sp-1);
+}

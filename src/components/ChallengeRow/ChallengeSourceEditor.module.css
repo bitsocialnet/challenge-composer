@@ -1,0 +1,77 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+
+.tab,
+.tabActive {
+  padding: 4px 12px;
+  font-size: var(--font-sm);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: var(--bg-elev);
+  border: none;
+}
+
+.tabActive {
+  background: var(--accent-faint);
+  color: var(--accent);
+  border: none;
+}
+
+.tabActive:hover {
+  background: var(--accent-faint);
+  border: none;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text);
+  font-size: var(--font-sm);
+  font-weight: var(--weight-reg);
+  cursor: pointer;
+  padding-top: var(--sp-1);
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+  margin: 0;
+}

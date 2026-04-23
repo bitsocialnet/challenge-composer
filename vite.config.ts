@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { viteSingleFile } from "vite-plugin-singlefile";
 import { fileURLToPath } from "node:url";
 
 // pkc-js's community schema sits at an internal subpath (not exposed in its `exports`
@@ -13,7 +14,7 @@ const pkcCommentSchema = fileURLToPath(
 );
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), viteSingleFile()],
   base: "./",
   resolve: {
     alias: [

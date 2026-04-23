@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { App } from "../App.tsx";
@@ -26,8 +26,8 @@ describe("editor", () => {
     const user = userEvent.setup();
     renderApp();
     await user.click(screen.getByRole("button", { name: /add challenge/i }));
-    const previewCode = document.querySelector("pre code");
-    expect(previewCode?.textContent ?? "").toMatch(/captcha-canvas-v3/);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    expect(previewEditor.value).toMatch(/captcha-canvas-v3/);
     expect(screen.getByText(/#1/)).toBeInTheDocument();
   });
 
@@ -41,8 +41,8 @@ describe("editor", () => {
     const hintSelect = suggestSelects.find((s) => s.querySelector("option[value='characters']"));
     if (!hintSelect) throw new Error("hint select not found");
     await user.selectOptions(hintSelect, "characters");
-    const preview = document.querySelector("pre code")?.textContent ?? "";
-    expect(preview).toMatch(/"characters":/);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    expect(previewEditor.value).toMatch(/"characters":/);
   });
 
   it("adds then removes an exclude group", async () => {
@@ -62,5 +62,14 @@ describe("editor", () => {
     expect(screen.getByText(/#1/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^remove$/i }));
     expect(screen.queryByText(/#1/)).not.toBeInTheDocument();
+  });
+
+  it("editing the JSON preview updates the editor", async () => {
+    renderApp();
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    fireEvent.change(previewEditor, { target: { value: '[{"name": "text-math"}]' } });
+    expect(screen.getByText(/#1/)).toBeInTheDocument();
+    const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
+    expect(nameInput.value).toBe("text-math");
   });
 });

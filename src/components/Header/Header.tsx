@@ -10,9 +10,10 @@ const ChallengeSettingsArraySchema = CommunityChallengeSettingSchema.array();
 interface HeaderProps {
   onImport: () => void;
   onShare: () => void;
+  onExportCli: () => void;
 }
 
-export function Header({ onImport, onShare }: HeaderProps) {
+export function Header({ onImport, onShare, onExportCli }: HeaderProps) {
   const { state, dispatch } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,6 +95,9 @@ export function Header({ onImport, onShare }: HeaderProps) {
         </button>
         <button type="button" onClick={onShare}>
           Share URL
+        </button>
+        <button type="button" onClick={onExportCli}>
+          Export CLI
         </button>
       </div>
     </header>

@@ -8,6 +8,30 @@ export const KNOWN_CHALLENGE_NAMES = [
 
 export type KnownChallengeName = (typeof KNOWN_CHALLENGE_NAMES)[number];
 
+// pkc-js ships these challenges in its runtime; no `challenge install` required.
+export const PKC_BUILTIN_CHALLENGE_NAMES = [
+  "blacklist",
+  "fail",
+  "publication-match",
+  "question",
+  "text-math",
+  "whitelist"
+] as const;
+
+export function isBuiltinChallenge(name: string | undefined): boolean {
+  if (!name) return false;
+  return (PKC_BUILTIN_CHALLENGE_NAMES as readonly string[]).includes(name);
+}
+
+// Challenge `name` → npm package that registers it. Used by the CLI export to
+// emit `bitsocial challenge install …` lines. Anything not listed here falls
+// back to the challenge's `path` field (or shows a `<UNKNOWN_PACKAGE>` stub).
+export const CHALLENGE_PACKAGE_MAP: Record<string, string> = {
+  "captcha-canvas-v3": "@bitsocial/captcha-canvas-challenge",
+  "evm-contract-call": "@bitsocial/evm-contract-challenge",
+  mintpass: "@bitsocial/mintpass-challenge"
+};
+
 export interface ChallengeOptionHint {
   option: string;
   label: string;

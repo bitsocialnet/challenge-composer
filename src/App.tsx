@@ -5,6 +5,7 @@ import { ChallengesEditor } from "./components/ChallengesEditor/ChallengesEditor
 import { JsonPreview } from "./components/JsonPreview/JsonPreview.tsx";
 import { ImportDialog } from "./components/ImportDialog/ImportDialog.tsx";
 import { ShareDialog } from "./components/ShareDialog/ShareDialog.tsx";
+import { ExportCliDialog } from "./components/ExportCliDialog/ExportCliDialog.tsx";
 import { useSettings } from "./state/useSettingsStore.ts";
 import { CommunityChallengeSettingSchema } from "./pkc-schema.ts";
 
@@ -14,12 +15,17 @@ export function App() {
   const { state } = useSettings();
   const [showImport, setShowImport] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showCli, setShowCli] = useState(false);
 
   const validation = useMemo(() => ChallengeSettingsArraySchema.safeParse(state), [state]);
 
   return (
     <div className={styles.root}>
-      <Header onImport={() => setShowImport(true)} onShare={() => setShowShare(true)} />
+      <Header
+        onImport={() => setShowImport(true)}
+        onShare={() => setShowShare(true)}
+        onExportCli={() => setShowCli(true)}
+      />
       <main className={styles.main}>
         <section className={styles.previewPane}>
           <JsonPreview settings={state} validation={validation} />
@@ -30,6 +36,7 @@ export function App() {
       </main>
       {showImport ? <ImportDialog onClose={() => setShowImport(false)} /> : null}
       {showShare ? <ShareDialog onClose={() => setShowShare(false)} /> : null}
+      {showCli ? <ExportCliDialog onClose={() => setShowCli(false)} /> : null}
     </div>
   );
 }

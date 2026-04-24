@@ -1,72 +1,61 @@
-export const KNOWN_CHALLENGE_NAMES = [
-  "fail",
-  "captcha-canvas-v3",
-  "text-math",
-  "evm-contract-call",
-  "mintpass"
-] as const;
+import {
+  BUILTIN_CHALLENGES,
+  EXTERNAL_CHALLENGES,
+  type ChallengeMetadata,
+  type OptionInput
+} from "virtual:challenge-metadata";
 
-export type KnownChallengeName = (typeof KNOWN_CHALLENGE_NAMES)[number];
+export { BUILTIN_CHALLENGES, EXTERNAL_CHALLENGES };
+export type { ChallengeMetadata, OptionInput };
 
-// Sourced at build time from `Object.keys(PKC.challenges)` in @pkcprotocol/pkc-js —
-// the challenges pkc-js ships in its runtime that resolve by `name` without any
-// `challenge install` step. See vite.config.ts `pkcBuiltinNamesPlugin`.
-export { PKC_BUILTIN_CHALLENGE_NAMES } from "virtual:pkc-js-builtin-names";
-import { PKC_BUILTIN_CHALLENGE_NAMES } from "virtual:pkc-js-builtin-names";
+// Structurally identical to OptionInput; kept as a named re-export so existing
+// callers that import ChallengeOptionHint don't break.
+export type ChallengeOptionHint = OptionInput;
+
+export const BUILTIN_CHALLENGE_NAMES: ReadonlyArray<string> = BUILTIN_CHALLENGES.map((c) => c.name);
+
+// Derived name → npm package map used by the CLI export to emit
+// `bitsocial challenge install <pkg>` lines. Built from EXTERNAL_CHALLENGES;
+// no hand-maintained entries.
+export const CHALLENGE_PACKAGE_MAP: Readonly<Record<string, string>> = Object.freeze(
+  Object.fromEntries(
+    EXTERNAL_CHALLENGES.filter((c) => c.packageName).map((c) => [c.name, c.packageName!])
+  )
+);
+
+// Path → metadata lookup, so OptionsEditor can resolve hints when the user
+// selects an external challenge (which sets `path`, not `name`).
+const EXTERNAL_BY_PACKAGE: ReadonlyMap<string, ChallengeMetadata> = new Map(
+  EXTERNAL_CHALLENGES.filter((c) => c.packageName).map((c) => [c.packageName!, c])
+);
+
+const BUILTIN_BY_NAME: ReadonlyMap<string, ChallengeMetadata> = new Map(
+  BUILTIN_CHALLENGES.map((c) => [c.name, c])
+);
 
 export function isBuiltinChallenge(name: string | undefined): boolean {
   if (!name) return false;
-  return PKC_BUILTIN_CHALLENGE_NAMES.includes(name);
+  return BUILTIN_BY_NAME.has(name);
 }
 
-// Challenge `name` → npm package that registers it. Used by the CLI export to
-// emit `bitsocial challenge install …` lines. Anything not listed here falls
-// back to the challenge's `path` field (or shows a `<UNKNOWN_PACKAGE>` stub).
-export const CHALLENGE_PACKAGE_MAP: Record<string, string> = {
-  "captcha-canvas-v3": "@bitsocial/captcha-canvas-challenge",
-  "evm-contract-call": "@bitsocial/evm-contract-challenge",
-  mintpass: "@bitsocial/mintpass-challenge"
-};
-
-export interface ChallengeOptionHint {
-  option: string;
-  label: string;
-  default?: string;
-  description?: string;
-  placeholder?: string;
-  required?: boolean;
+export interface ChallengeIdentifier {
+  name?: string;
+  path?: string;
 }
 
-export const OPTION_HINTS: Record<KnownChallengeName, ChallengeOptionHint[]> = {
-  fail: [
-    { option: "error", label: "Error message", default: "This challenge always fails.", description: "Message shown to the user when they hit this gate." }
-  ],
-  "captcha-canvas-v3": [
-    { option: "characters", label: "Characters", default: "6", description: "Number of characters in the captcha." },
-    { option: "width", label: "Width", default: "300", description: "Image width in pixels." },
-    { option: "height", label: "Height", default: "100", description: "Image height in pixels." },
-    { option: "color", label: "Text color", description: "Text colour hex code." }
-  ],
-  "text-math": [
-    { option: "difficulty", label: "Difficulty", default: "1", description: "Difficulty of the math problem (1-3)." }
-  ],
-  "evm-contract-call": [
-    { option: "chainTicker", label: "Chain ticker", default: "eth", description: "e.g. eth, matic, avax." },
-    { option: "address", label: "Contract address", required: true, description: "EVM contract address to call." },
-    { option: "abi", label: "Function ABI (JSON)", required: true, description: "JSON ABI of the function to call (e.g. balanceOf)." },
-    { option: "condition", label: "Condition", description: "e.g. >0, ==1, >=42. Expression applied to the return value." },
-    { option: "error", label: "Error message", description: "Shown when the call fails the condition." }
-  ],
-  mintpass: [
-    { option: "chainTicker", label: "Chain ticker", default: "base", description: "Chain where the Mintpass contract lives." },
-    { option: "contractAddress", label: "Contract address", required: true, description: "Mintpass contract address." },
-    { option: "requiredTokenType", label: "Required token type", default: "0", description: "Numeric token type id required to pass." },
-    { option: "transferCooldownSeconds", label: "Transfer cooldown (s)", default: "604800", description: "Block addresses that received a token within N seconds." },
-    { option: "error", label: "Error message", description: "Shown when the user doesn't have a valid token." }
-  ]
-};
+export function findChallengeMetadata(challenge: ChallengeIdentifier): ChallengeMetadata | undefined {
+  if (challenge.path) {
+    const byPath = EXTERNAL_BY_PACKAGE.get(challenge.path);
+    if (byPath) return byPath;
+  }
+  if (challenge.name) {
+    return BUILTIN_BY_NAME.get(challenge.name);
+  }
+  return undefined;
+}
 
-export function hintsForChallenge(name: string | undefined): ChallengeOptionHint[] {
-  if (!name) return [];
-  return OPTION_HINTS[name as KnownChallengeName] ?? [];
+export function hintsForChallenge(challenge: ChallengeIdentifier | string | undefined): ReadonlyArray<ChallengeOptionHint> {
+  if (!challenge) return [];
+  const id: ChallengeIdentifier = typeof challenge === "string" ? { name: challenge } : challenge;
+  return findChallengeMetadata(id)?.optionInputs ?? [];
 }

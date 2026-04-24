@@ -13,18 +13,35 @@ describe("cliExport", () => {
 
   it("emits install lines for known external challenges and dedupes", () => {
     const settings: ChallengeSettings = [
-      { name: "captcha-canvas-v3" },
-      { name: "mintpass" },
-      { name: "mintpass" }
+      { path: "@bitsocial/captcha-canvas-challenge" },
+      { path: "@bitsocial/voucher-challenge" },
+      { path: "@bitsocial/voucher-challenge" }
     ];
     const targets = collectInstallTargets(settings);
     expect(targets).toEqual([
-      { name: "captcha-canvas-v3", package: "@bitsocial/captcha-canvas-challenge", guessed: false },
-      { name: "mintpass", package: "@bitsocial/mintpass-challenge", guessed: false }
+      {
+        name: "@bitsocial/captcha-canvas-challenge",
+        package: "@bitsocial/captcha-canvas-challenge",
+        guessed: false
+      },
+      {
+        name: "@bitsocial/voucher-challenge",
+        package: "@bitsocial/voucher-challenge",
+        guessed: false
+      }
     ]);
     const result = buildCliExport(settings, { address: "demo.bso" });
     expect(result.script).toMatch(/bitsocial challenge install @bitsocial\/captcha-canvas-challenge/);
-    expect(result.script).toMatch(/bitsocial challenge install @bitsocial\/mintpass-challenge/);
+    expect(result.script).toMatch(/bitsocial challenge install @bitsocial\/voucher-challenge/);
+  });
+
+  it("maps bare external names via the derived package map", () => {
+    const settings: ChallengeSettings = [{ name: "voucher" }, { name: "ai-moderation" }];
+    const targets = collectInstallTargets(settings);
+    expect(targets).toEqual([
+      { name: "voucher", package: "@bitsocial/voucher-challenge", guessed: false },
+      { name: "ai-moderation", package: "@bitsocial/ai-moderation-challenge", guessed: false }
+    ]);
   });
 
   it("passes through the path field verbatim as the install specifier", () => {

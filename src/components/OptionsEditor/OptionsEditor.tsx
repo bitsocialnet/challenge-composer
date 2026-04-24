@@ -12,7 +12,7 @@ interface OptionsEditorProps {
 export function OptionsEditor({ challengeIndex, challenge }: OptionsEditorProps) {
   const { dispatch } = useSettings();
   const entries = useMemo(() => Object.entries(challenge.options ?? {}), [challenge.options]);
-  const hints = hintsForChallenge(challenge.name);
+  const hints = hintsForChallenge(challenge);
 
   const replaceOptions = (next: Record<string, string>) => {
     dispatch({ type: "UPDATE_CHALLENGE", index: challengeIndex, patch: { options: next } });

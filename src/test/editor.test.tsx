@@ -69,8 +69,8 @@ describe("editor", () => {
     const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
     fireEvent.change(previewEditor, { target: { value: '[{"name": "text-math"}]' } });
     expect(screen.getByText(/#1/)).toBeInTheDocument();
-    const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
-    expect(nameInput.value).toBe("text-math");
+    const knownSelect = screen.getByLabelText(/^challenge$/i) as HTMLSelectElement;
+    expect(knownSelect.value).toBe("builtin:text-math");
   });
 
   it("collapses and expands a challenge row", async () => {
@@ -79,12 +79,12 @@ describe("editor", () => {
     await user.click(screen.getByRole("button", { name: /add challenge/i }));
     const article = screen.getByRole("article");
     const expandedToggle = within(article).getByRole("button", { expanded: true });
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^challenge$/i)).toBeInTheDocument();
     await user.click(expandedToggle);
-    expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^challenge$/i)).not.toBeInTheDocument();
     const collapsedToggle = within(article).getByRole("button", { expanded: false });
     await user.click(collapsedToggle);
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^challenge$/i)).toBeInTheDocument();
   });
 
   it("moves a challenge down with the Move down button", async () => {

@@ -1,0 +1,50 @@
+#!/bin/sh
+# Pre-push: keep the external challenge manifest + pinned versions + bundled
+# dist/index.html in sync with what bitsocialnet currently publishes. If anything
+# drifts, abort the push so the dev can review and commit the refresh.
+#
+# Installed by scripts/install-git-hooks.mjs (run from the `prepare` npm script).
+# The installer copies this file into .git/hooks/pre-push and marks it so it
+# only updates copies it wrote itself — hand-rolled hooks are left alone. Skip
+# with `git push --no-verify` if you need to.
+
+set -e
+
+# Snapshot the tree before refreshing so we can tell the difference between
+# pre-existing in-flight work and drift introduced by the refresh itself.
+before=$(git status --porcelain)
+pkg_before=$(sha1sum package.json | awk '{print $1}')
+
+echo "[pre-push] refreshing external challenge manifest from bitsocialnet…"
+node scripts/refresh-external-challenges.mjs
+
+# If the refresh itself changed package.json, bring node_modules + lockfile in
+# line. (Comparing sha, not against HEAD, so unrelated in-flight edits to
+# package.json don't trigger an unnecessary install.)
+pkg_after=$(sha1sum package.json | awk '{print $1}')
+if [ "$pkg_before" != "$pkg_after" ]; then
+  echo "[pre-push] package.json changed — running npm install…"
+  # --ignore-scripts: don't let `prepare` rewrite this hook file mid-execution;
+  # that corrupts bash's line-by-line read and the rest of the script garbles.
+  npm install --silent --ignore-scripts
+fi
+
+echo "[pre-push] rebuilding dist/index.html…"
+npm run build --silent >/dev/null
+
+after=$(git status --porcelain)
+
+# If the refresh introduced new drift vs. the pre-refresh snapshot, stop the
+# push so the dev can review and commit. Pre-existing uncommitted files are
+# ignored — those are the dev's own in-progress work.
+if [ "$before" != "$after" ]; then
+  echo ""
+  echo "[pre-push] refresh introduced new changes. Review and commit, then push again:"
+  echo ""
+  diff <(printf "%s\n" "$before") <(printf "%s\n" "$after") | sed 's/^/    /'
+  echo ""
+  echo "  (use 'git push --no-verify' to bypass this check)"
+  exit 1
+fi
+
+echo "[pre-push] no drift — push proceeding."

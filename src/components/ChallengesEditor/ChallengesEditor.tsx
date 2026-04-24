@@ -3,7 +3,7 @@ import styles from "./ChallengesEditor.module.css";
 import { useSettings } from "../../state/useSettingsStore.ts";
 import { ChallengeRow } from "../ChallengeRow/ChallengeRow.tsx";
 import { Menu, type MenuItem } from "../ui/Menu.tsx";
-import { KNOWN_CHALLENGE_NAMES, PKC_BUILTIN_CHALLENGE_NAMES } from "../../lib/knownChallenges.ts";
+import { BUILTIN_CHALLENGES, EXTERNAL_CHALLENGES } from "../../lib/knownChallenges.ts";
 import { PRESETS, type Preset } from "../../presets/index.ts";
 import { parseJsonc } from "../../lib/jsonc.ts";
 import { CommunityChallengeSettingSchema } from "../../pkc-schema.ts";
@@ -69,20 +69,18 @@ export function ChallengesEditor() {
     dispatch({ type: "REPLACE_ALL", settings: parsed.data });
   };
 
-  const pkcNames = PKC_BUILTIN_CHALLENGE_NAMES as readonly string[];
-  const npmNames = (KNOWN_CHALLENGE_NAMES as readonly string[]).filter((n) => !pkcNames.includes(n));
   const addMenuItems: MenuItem[] = [
-    ...pkcNames.map((n) => ({
-      id: `pkc-${n}`,
-      section: "pkc-js built-in",
-      label: n,
-      onSelect: () => addChallenge({ name: n })
+    ...BUILTIN_CHALLENGES.map((c) => ({
+      id: `builtin-${c.name}`,
+      section: "Built-in (pkc-js)",
+      label: c.name,
+      onSelect: () => addChallenge({ name: c.name })
     })),
-    ...npmNames.map((n) => ({
-      id: `npm-${n}`,
-      section: "npm-installed",
-      label: n,
-      onSelect: () => addChallenge({ name: n })
+    ...EXTERNAL_CHALLENGES.filter((c) => c.packageName).map((c) => ({
+      id: `ext-${c.packageName}`,
+      section: "External (install required)",
+      label: `${c.name} — ${c.packageName}`,
+      onSelect: () => addChallenge({ path: c.packageName })
     })),
     {
       id: "custom-path",

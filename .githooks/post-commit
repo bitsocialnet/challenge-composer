@@ -1,0 +1,26 @@
+#!/bin/sh
+# Post-commit: rewrite the just-created commit so both author and committer
+# timestamps are in UTC (suffix `Z`). The exact instant is preserved via epoch
+# seconds — only the displayed zone changes — so commit hashes across zones
+# become reproducible and `git log` is unambiguous.
+#
+# Installed by scripts/install-git-hooks.mjs (run from the `prepare` npm
+# script). The installer skips hand-written .git/hooks/post-commit without the
+# marker, so personal hooks stay intact.
+
+# Avoid recursion: the amend below fires this hook again.
+[ -n "$GIT_POST_COMMIT_UTC" ] && exit 0
+
+ad=$(git show -s --format=%aI)
+cd=$(git show -s --format=%cI)
+case "$ad" in *Z) ;; *) needs_fix=1;; esac
+case "$cd" in *Z) ;; *) needs_fix=1;; esac
+[ -z "$needs_fix" ] && exit 0
+
+at=$(git show -s --format=%at)
+ct=$(git show -s --format=%ct)
+
+GIT_POST_COMMIT_UTC=1 \
+GIT_AUTHOR_DATE="@${at} +0000" \
+GIT_COMMITTER_DATE="@${ct} +0000" \
+  git commit --amend --no-edit >/dev/null 2>&1 || true

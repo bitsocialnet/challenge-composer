@@ -48,6 +48,7 @@
   font-size: var(--font-md);
   cursor: pointer;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .item:hover:not(:disabled),

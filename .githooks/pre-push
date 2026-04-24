@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Pre-push: keep the external challenge manifest + pinned versions + bundled
 # dist/index.html in sync with what bitsocialnet currently publishes. If anything
 # drifts, abort the push so the dev can review and commit the refresh.

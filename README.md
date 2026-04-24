@@ -1,6 +1,6 @@
 # challenge-composer
 
-A standalone, offline-first web app for **visualizing and editing** the `challenges` array of a Plebbit community's `settings` (pkc-js format). Inspired by the challenges section of seedit's subplebbit-settings view.
+A standalone, offline-first web app for **visualizing and editing** the `challenges` array of a PKC community's `settings` (pkc-js format). Inspired by the challenges section of seedit's community-settings view.
 
 - Zero outward HTTP at runtime — everything works from the bundled app and user-supplied data.
 - Types-only dependency on [`@pkcprotocol/pkc-js`](https://www.npmjs.com/package/@pkcprotocol/pkc-js). The compiled app does not import the pkc-js runtime.

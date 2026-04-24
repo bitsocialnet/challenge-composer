@@ -1,12 +1,14 @@
-name: Deploy to GitHub Pages
+name: Release and deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: ["completed"]
     branches: [master]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -15,27 +17,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  release-and-deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          ref: master
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: 'npm' }
       - run: npm ci
-      - run: npm test
+      - name: Configure git author
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Run release-it
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release -- --ci || true
       - run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - id: deployment
         uses: actions/deploy-pages@v4

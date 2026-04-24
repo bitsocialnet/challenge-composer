@@ -69,7 +69,10 @@ export function Header({ onImport, onShare, onExportCli }: HeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.title}>
-        <strong>challenge-composer</strong>
+        <span className={styles.name}>
+          <strong>challenge-composer</strong>
+          <span className={styles.version}>v{__APP_VERSION__}</span>
+        </span>
         <span className={styles.subtitle}>edit pkc-js challenge settings</span>
       </div>
       <div className={styles.actions}>

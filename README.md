@@ -21,6 +21,17 @@ xdg-open dist/index.html   # or just double-click it
 
 Supporting scripts: `npm test` (Vitest + happy-dom), `npm run typecheck`, `npm run preview` (serves `dist/` locally for a smoke test).
 
+The current `package.json` version is injected into the bundle via Vite's `define` as `__APP_VERSION__` and rendered next to the header title, so whoever opens `dist/index.html` can see which release it came from.
+
+## Release flow
+
+Versioning is automated. Conventional commits (`feat:`, `fix:`, `perf:`, `build:`, `revert:`) on `master` trigger a release:
+
+1. The **CI** workflow (`.github/workflows/ci.yml`) runs typecheck, tests, and build on every push/PR.
+2. The **Release and deploy** workflow (`.github/workflows/deploy.yml`) runs on successful CI completion on `master`: it invokes `release-it` (config in `config/.release-it.json`) which bumps the version, updates `CHANGELOG.md`, commits `chore(release): X.Y.Z [skip ci]`, tags `vX.Y.Z`, and cuts a GitHub release. It then rebuilds `dist/index.html` with the new version embedded and publishes it to GitHub Pages.
+
+The repo ships a commit-msg hook (`.githooks/commit-msg`, installed by `scripts/install-git-hooks.mjs`) that runs `commitlint` on the message so non-conventional commits are caught before they reach master. `git cz` via `commitizen` is wired up as an interactive alternative.
+
 State (drafts, share links) lives in `localStorage` of whichever origin you open it from.
 
 ## What it edits

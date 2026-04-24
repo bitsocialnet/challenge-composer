@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "typecheck": "tsc -b --noEmit",
-    "prepare": "node scripts/install-git-hooks.mjs"
+    "prepare": "node scripts/install-git-hooks.mjs",
+    "release": "release-it --config config/.release-it.json"
   },
   "dependencies": {
     "@pkcprotocol/pkc-js": "0.0.19",
@@ -29,6 +30,9 @@
     "@bitsocial/captcha-canvas-challenge": "0.1.4",
     "@bitsocial/evm-contract-challenge": "0.1.3",
     "@bitsocial/voucher-challenge": "0.1.2",
+    "@commitlint/cli": "20.4.3",
+    "@commitlint/config-conventional": "20.4.3",
+    "@release-it/conventional-changelog": "10.0.5",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
@@ -37,10 +41,18 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.1",
     "@vitest/ui": "4.1.5",
+    "commitizen": "4.3.1",
+    "cz-conventional-changelog": "3.3.0",
     "happy-dom": "20.9.0",
+    "release-it": "19.2.4",
     "typescript": "6.0.3",
     "vite": "8.0.9",
     "vite-plugin-singlefile": "^2.3.3",
     "vitest": "4.1.5"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }

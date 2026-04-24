@@ -1,0 +1,8 @@
+#!/bin/sh
+# Commit-msg: validate message against @commitlint/config-conventional so that
+# release-it's conventional-changelog plugin sees the expected `type(scope): …`
+# shape when it decides whether to bump the version.
+#
+# Installed by scripts/install-git-hooks.mjs. Skip with `git commit --no-verify`.
+
+exec npx --no -- commitlint --edit "$1"

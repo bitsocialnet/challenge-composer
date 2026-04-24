@@ -3,9 +3,16 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { EXTERNAL_CHALLENGE_PACKAGES } from "./src/lib/externalChallengePackages";
+
+// Read package.json at config load so the version is injected into the bundle
+// at build time. Import assertions would be cleaner, but reading synchronously
+// keeps compatibility with all Node 22 minor versions.
+const pkg = JSON.parse(
+  readFileSync(fileURLToPath(new URL("./package.json", import.meta.url)), "utf8")
+) as { version: string };
 
 // pkc-js's community schema sits at an internal subpath (not exposed in its `exports`
 // map), so we alias it directly — import, never mirror.
@@ -113,6 +120,9 @@ export const EXTERNAL_CHALLENGES = Object.freeze(${JSON.stringify(externals)});
 export default defineConfig({
   plugins: [challengeMetadataPlugin(), react(), viteSingleFile()],
   base: "./",
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version)
+  },
   resolve: {
     alias: [
       { find: "@pkc/community-schema", replacement: pkcCommunitySchema },

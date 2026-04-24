@@ -47,7 +47,7 @@ export function ImportDialog({ onClose }: ImportDialogProps) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={18}
-          placeholder={'[\n  {\n    "name": "captcha-canvas-v3",\n    "options": { "characters": "6" }\n  }\n]'}
+          placeholder={'[\n  {\n    "name": "text-math",\n    "options": { "difficulty": "2" }\n  }\n]'}
           autoFocus
         />
         {error ? <pre className={styles.error}>{error}</pre> : null}

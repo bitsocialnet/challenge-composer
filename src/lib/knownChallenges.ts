@@ -8,19 +8,15 @@ export const KNOWN_CHALLENGE_NAMES = [
 
 export type KnownChallengeName = (typeof KNOWN_CHALLENGE_NAMES)[number];
 
-// pkc-js ships these challenges in its runtime; no `challenge install` required.
-export const PKC_BUILTIN_CHALLENGE_NAMES = [
-  "blacklist",
-  "fail",
-  "publication-match",
-  "question",
-  "text-math",
-  "whitelist"
-] as const;
+// Sourced at build time from `Object.keys(PKC.challenges)` in @pkcprotocol/pkc-js —
+// the challenges pkc-js ships in its runtime that resolve by `name` without any
+// `challenge install` step. See vite.config.ts `pkcBuiltinNamesPlugin`.
+export { PKC_BUILTIN_CHALLENGE_NAMES } from "virtual:pkc-js-builtin-names";
+import { PKC_BUILTIN_CHALLENGE_NAMES } from "virtual:pkc-js-builtin-names";
 
 export function isBuiltinChallenge(name: string | undefined): boolean {
   if (!name) return false;
-  return (PKC_BUILTIN_CHALLENGE_NAMES as readonly string[]).includes(name);
+  return PKC_BUILTIN_CHALLENGE_NAMES.includes(name);
 }
 
 // Challenge `name` → npm package that registers it. Used by the CLI export to

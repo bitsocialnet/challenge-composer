@@ -18,7 +18,7 @@ function reducer(state: ChallengeSettings, action: SettingsAction): ChallengeSet
     case "REPLACE_ALL":
       return [...action.settings];
     case "ADD_CHALLENGE":
-      return [...state, action.challenge ?? { name: "captcha-canvas-v3" }];
+      return [...state, action.challenge ?? { name: "text-math" }];
     case "REMOVE_CHALLENGE":
       return state.filter((_, i) => i !== action.index);
     case "UPDATE_CHALLENGE":

@@ -29,7 +29,7 @@ export function ChallengeCard({ index, challenge }: ChallengeCardProps) {
   const switchMode = (next: Mode) => {
     setMode(next);
     if (next === "name") {
-      update({ path: undefined, name: challenge.name ?? "captcha-canvas-v3" });
+      update({ path: undefined, name: challenge.name ?? "text-math" });
     } else {
       update({ name: undefined, path: challenge.path ?? "./my-challenge.js" });
     }
@@ -77,7 +77,7 @@ export function ChallengeCard({ index, challenge }: ChallengeCardProps) {
               list={`names-${index}`}
               value={challenge.name ?? ""}
               onChange={(e) => update({ name: e.target.value })}
-              placeholder="captcha-canvas-v3"
+              placeholder="text-math"
             />
             <datalist id={`names-${index}`}>
               {KNOWN_CHALLENGE_NAMES.map((n) => (

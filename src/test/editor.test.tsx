@@ -27,7 +27,7 @@ describe("editor", () => {
     renderApp();
     await user.click(screen.getByRole("button", { name: /add challenge/i }));
     const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
-    expect(previewEditor.value).toMatch(/captcha-canvas-v3/);
+    expect(previewEditor.value).toMatch(/text-math/);
     expect(screen.getByText(/#1/)).toBeInTheDocument();
   });
 
@@ -38,11 +38,11 @@ describe("editor", () => {
     const card = screen.getByText(/#1/).closest("article");
     if (!card) throw new Error("card not found");
     const suggestSelects = within(card).getAllByRole("combobox");
-    const hintSelect = suggestSelects.find((s) => s.querySelector("option[value='characters']"));
+    const hintSelect = suggestSelects.find((s) => s.querySelector("option[value='difficulty']"));
     if (!hintSelect) throw new Error("hint select not found");
-    await user.selectOptions(hintSelect, "characters");
+    await user.selectOptions(hintSelect, "difficulty");
     const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
-    expect(previewEditor.value).toMatch(/"characters":/);
+    expect(previewEditor.value).toMatch(/"difficulty":/);
   });
 
   it("adds then removes an exclude group", async () => {

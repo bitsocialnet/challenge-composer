@@ -2,8 +2,8 @@
 
 A standalone, offline-first web app for **visualizing and editing** the `challenges` array of a PKC community's `settings` (pkc-js format). Inspired by the challenges section of seedit's community-settings view.
 
-- Zero outward HTTP at runtime — everything works from the bundled app and user-supplied data.
-- Types-only dependency on [`@pkcprotocol/pkc-js`](https://www.npmjs.com/package/@pkcprotocol/pkc-js). The compiled app does not import the pkc-js runtime.
+- Ships as **one self-contained `dist/index.html`** with every JS/CSS chunk inlined by `vite-plugin-singlefile`. Drop it anywhere — USB stick, email attachment, static host — and open from `file://`.
+- Zero outward HTTP at runtime. Everything works from the bundled app and user-supplied data.
 - Fully typed, ESM, Node ≥22, Vitest for tests.
 
 ## Requirements
@@ -13,13 +13,15 @@ A standalone, offline-first web app for **visualizing and editing** the `challen
 
 ## Getting started
 
-```bash
-npm ci           # install pinned exact versions
-npm run dev      # start the Vite dev server on http://localhost:5173
-npm test         # run the Vitest suite (happy-dom)
-npm run build    # type-check + produce a static bundle in dist/
-npm run preview  # serve dist/ locally for a smoke test
+```sh
+npm ci             # install pinned exact versions
+npm run build      # type-check + emit dist/index.html (everything inlined)
+xdg-open dist/index.html   # or just double-click it
 ```
+
+Supporting scripts: `npm test` (Vitest + happy-dom), `npm run typecheck`, `npm run preview` (serves `dist/` locally for a smoke test).
+
+State (drafts, share links) lives in `localStorage` of whichever origin you open it from.
 
 ## What it edits
 
@@ -27,13 +29,12 @@ A JSON array of `CommunityChallengeSetting`, the same shape pkc-js accepts in `c
 
 ```jsonc
 {
-  "name": "captcha-canvas-v3",        // built-in challenge identifier, OR
+  "name": "text-math",                // pkc-js built-in challenge identifier, OR
   "path": "./my-challenge.js",        // path to a custom challenge module (one of the two)
   "description": "Solve to post.",
   "pendingApproval": true,            // mods must approve after the user solves
   "options": {                        // all values must be strings
-    "characters": "6",
-    "width": "280"
+    "difficulty": "2"
   },
   "exclude": [                        // any matching group lets the author bypass
     { "role": ["moderator", "admin", "owner"] },
@@ -43,13 +44,22 @@ A JSON array of `CommunityChallengeSetting`, the same shape pkc-js accepts in `c
 }
 ```
 
-Validation is done by a local zod schema mirroring `CommunityChallengeSettingSchema` in `pkc-js/src/community/schema.ts`. The compile-time assertion in `src/schema/challengeSettings.ts` guarantees the mirror stays structurally identical to the pkc-js type.
+### Challenges shipped with pkc-js
+
+A challenge name is "built-in" iff it is a key of `PKC.challenges` (= `pkcJsChallenges`) in `@pkcprotocol/pkc-js` — these resolve by `name` without any install step on the community node. The list is extracted at build time by the `pkcBuiltinNamesPlugin` Vite plugin (see `vite.config.ts`) and exposed to the app as `PKC_BUILTIN_CHALLENGE_NAMES` in `src/lib/knownChallenges.ts`, so adding or removing a built-in in pkc-js propagates on next rebuild without any manual edits here.
+
+Anything not in that list — `captcha-canvas-v3`, `evm-contract-call`, `mintpass`, … — is an **external** challenge that the community operator must install on their node separately, e.g. `bitsocial challenge install @bitsocial/captcha-canvas-challenge`. The **Export CLI** button uses the same `PKC.challenges` list (via `isBuiltinChallenge`) to decide which names need a `challenge install` line prepended.
+
+### Validation
+
+`CommunityChallengeSettingSchema` is imported directly from `@pkcprotocol/pkc-js` at runtime (via a Vite alias around its internal subpath) — no local mirror, so the schema cannot drift from upstream. See `src/pkc-schema.ts` and the `@pkc/*` aliases in `vite.config.ts`.
 
 ## Features
 
-- **Seedit-style editor**: add/remove challenges, edit name/path/options/description/pendingApproval, manage exclude rules (roles, post/reply counts, account age, rate limit, publication type, author addresses).
+- **Seedit-style editor**: add/remove/reorder challenges, edit name/path/options/description/pendingApproval, manage exclude rules (roles, post/reply counts, account age, rate limit, publication type, author addresses).
 - **Presets dropdown**: ships with `5chan board defaults`, `captcha only`, and `empty`.
 - **Paste JSONC** dialog, **file upload** (`.json` / `.jsonc`), and **download** as `challenges.jsonc`.
+- **Export CLI**: emits a `bitsocial challenge install …` + `bitsocial community edit …` shell script tailored to the current settings, flagging unknown challenge names with a TODO for the operator.
 - **Live JSON preview** with inline zod validation errors.
 - **LocalStorage draft** auto-saves every change.
 - **Share URL**: compresses the current settings into a URL fragment (`#s=…`). Browsers never send fragments to servers, so the blob stays client-side — but anyone holding the URL can decode it verbatim. A warning dialog makes this explicit before you copy.
@@ -63,18 +73,18 @@ Validation is done by a local zod schema mirroring `CommunityChallengeSettingSch
 
 ```
 src/
-├── types/challenges.ts              # type-only re-exports from @pkcprotocol/pkc-js
-├── schema/challengeSettings.ts      # local zod mirror of CommunityChallengeSettingSchema
+├── pkc-schema.ts                     # re-exports CommunityChallengeSettingSchema via vite alias
+├── types/challenges.ts               # type-only re-exports from @pkcprotocol/pkc-js
 ├── state/                            # useReducer store + localStorage/hash hydration
-├── lib/                              # jsonc, share (lz-string), known challenges catalog
+├── lib/                              # jsonc, share (lz-string), cliExport, known-challenges catalog
 ├── presets/                          # bundled .jsonc presets + registry
-└── components/                       # Header, ChallengesEditor, ChallengeCard,
-                                      # OptionsEditor, ExcludeRulesEditor,
-                                      # JsonPreview, ImportDialog, ShareDialog
+└── components/                       # Header, ChallengesEditor, ChallengeCard, ChallengeRow,
+                                      # OptionsEditor, ExcludeRulesEditor, JsonPreview,
+                                      # ImportDialog, ShareDialog, ExportCliDialog
 ```
 
 ## TODO
 
 - **Scenario simulator.** For each challenge in the current settings, simulate which publications and author profiles would be challenged vs. excluded, across a library of mock authors (brand-new account, moderator, high-karma user, rate-limited user, wallet holder, banned author address, …). Should exercise every branch of `ChallengeExcludeSchema` — role / postCount / replyCount / postScore / replyScore / firstCommentTimestamp / rateLimit / rateLimitChallengeSuccess / publicationType / address / community / challenges.
 - Inline zod validation errors attached to the specific offending field (currently shown in the JSON preview panel only).
-- Drag-and-drop reordering for challenges (the reducer already has `MOVE_CHALLENGE`, the UI just doesn't expose it yet).
+- Drag-and-drop reordering for challenges (the reducer has `MOVE_CHALLENGE` and Move up/down buttons; drag handles are not yet wired up).

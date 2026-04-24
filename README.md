@@ -1,5 +1,7 @@
 # challenge-composer
 
+**Live app: <https://bitsocialnet.github.io/challenge-composer/>**
+
 A standalone, offline-first web app for **visualizing and editing** the `challenges` array of a PKC community's `settings` (pkc-js format). Inspired by the challenges section of seedit's community-settings view.
 
 - Ships as **one self-contained `dist/index.html`** with every JS/CSS chunk inlined by `vite-plugin-singlefile`. Drop it anywhere — USB stick, email attachment, static host — and open from `file://`.

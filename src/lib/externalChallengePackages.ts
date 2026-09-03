@@ -11,7 +11,10 @@ export const EXTERNAL_CHALLENGE_PACKAGES = [
   "@bitsocial/ai-moderation-challenge",
   "@bitsocial/captcha-canvas-challenge",
   "@bitsocial/evm-contract-challenge",
-  "@bitsocial/voucher-challenge"
+  "@bitsocial/flags-challenge",
+  "@bitsocial/r9k-challenge",
+  "@bitsocial/voucher-challenge",
+  "@bitsocial/wordfilter-challenge"
 ] as const;
 
 export type ExternalChallengePackage = (typeof EXTERNAL_CHALLENGE_PACKAGES)[number];

@@ -26,10 +26,13 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@bitsocial/ai-moderation-challenge": "0.1.13",
-    "@bitsocial/captcha-canvas-challenge": "0.1.4",
+    "@bitsocial/ai-moderation-challenge": "0.3.0",
+    "@bitsocial/captcha-canvas-challenge": "0.1.5",
     "@bitsocial/evm-contract-challenge": "0.1.6",
-    "@bitsocial/voucher-challenge": "0.1.2",
+    "@bitsocial/flags-challenge": "0.1.2",
+    "@bitsocial/r9k-challenge": "0.1.1",
+    "@bitsocial/voucher-challenge": "0.1.3",
+    "@bitsocial/wordfilter-challenge": "0.3.0",
     "@commitlint/cli": "20.4.3",
     "@commitlint/config-conventional": "20.4.3",
     "@release-it/conventional-changelog": "10.0.5",

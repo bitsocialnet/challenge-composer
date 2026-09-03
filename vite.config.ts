@@ -23,8 +23,8 @@ const pkcCommentSchema = fileURLToPath(
   new URL("./node_modules/@pkcprotocol/pkc-js/dist/browser/publications/comment/schema.js", import.meta.url)
 );
 
-// Directory holding the built-in pkc-js challenge factories. Each *.js file is a
-// default-exported ChallengeFileFactory we can invoke to read its optionInputs.
+// Directory holding the built-in pkc-js challenge factories and their helpers.
+// Default-exported factories can be invoked to read their optionInputs.
 const pkcBuiltinChallengesDir = fileURLToPath(
   new URL(
     "./node_modules/@pkcprotocol/pkc-js/dist/node/runtime/node/community/challenges/pkc-js-challenges/",
@@ -52,12 +52,13 @@ interface ChallengeMetadata {
 // Invoke a ChallengeFileFactory with an empty settings stub and pluck the static
 // descriptor fields. pkc-js' contract is that the factory is a pure constructor:
 // I/O happens later in `getChallenge`, not during the factory call itself.
-async function extractMetadata(specifier: string, name: string): Promise<Omit<ChallengeMetadata, "packageName">> {
+async function extractMetadata(
+  specifier: string,
+  name: string
+): Promise<Omit<ChallengeMetadata, "packageName"> | undefined> {
   const mod = await import(specifier);
   const factory = mod.default;
-  if (typeof factory !== "function") {
-    throw new Error(`challenge-metadata: ${specifier} has no default-exported factory`);
-  }
+  if (typeof factory !== "function") return undefined;
   const file = factory({ challengeSettings: { name, options: {} } });
   return {
     name,
@@ -93,7 +94,8 @@ function challengeMetadataPlugin(): Plugin {
       for (const f of builtinFiles) {
         const name = path.basename(f, ".js");
         const specifier = pathToFileURL(path.join(pkcBuiltinChallengesDir, f)).href;
-        builtins.push(await extractMetadata(specifier, name));
+        const meta = await extractMetadata(specifier, name);
+        if (meta) builtins.push(meta);
       }
       if (builtins.length < 3) {
         throw new Error(
@@ -105,6 +107,9 @@ function challengeMetadataPlugin(): Plugin {
       for (const pkg of EXTERNAL_CHALLENGE_PACKAGES) {
         const name = externalNameFor(pkg);
         const meta = await extractMetadata(pkg, name);
+        if (!meta) {
+          throw new Error(`challenge-metadata: ${pkg} has no default-exported factory`);
+        }
         externals.push({ ...meta, packageName: pkg });
       }
 

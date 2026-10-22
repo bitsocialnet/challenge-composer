@@ -43,25 +43,25 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.1",
-    "@vitest/ui": "4.1.5",
+    "@vitest/ui": "4.1.12",
     "commitizen": "4.3.2",
     "cz-conventional-changelog": "3.3.0",
     "happy-dom": "20.9.0",
     "release-it": "19.2.4",
     "typescript": "6.0.3",
-    "vite": "8.2.2",
+    "vite": "8.2.4",
     "vite-plugin-singlefile": "^2.3.3",
-    "vitest": "4.1.5"
+    "vitest": "4.1.12"
   },
   "overrides": {
     "@pkcprotocol/pkc-js": {
-      "undici": "7.29.0",
+      "undici": "7.29.1",
       "uuid": "13.0.1",
       "ws": "8.21.3"
     },
     "protobufjs": "7.6.6",
     "release-it": {
-      "undici": "6.28.0"
+      "undici": "6.28.1"
     }
   },
   "config": {

@@ -55,9 +55,13 @@
   },
   "overrides": {
     "@pkcprotocol/pkc-js": {
-      "undici": "7.29.1",
-      "uuid": "13.0.1",
-      "ws": "8.21.3"
+      "probe-image-size": "7.4.0",
+      "undici@7": "7.29.1",
+      "uuid@13": "13.0.1",
+      "ws@8": "8.21.3"
+    },
+    "get-uri": {
+      "basic-ftp": "6.2.3"
     },
     "protobufjs": "7.6.6",
     "release-it": {

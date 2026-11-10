@@ -233,4 +233,46 @@ describe("editor", () => {
     expect(units()).toEqual(["m", "d"]);
     expect(amounts()).toEqual(["2", "1"]);
   });
+
+  it("adds conditions that start empty and keeps a condition row while its value is retyped", async () => {
+    const user = userEvent.setup();
+    renderApp([{ name: "text-math", exclude: [{ postCount: 10 }, {}] }]);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    const excludes = () => (JSON.parse(previewEditor.value) as ChallengeSettings)[0]?.exclude;
+    const group = (n: number) => screen.getByLabelText(`Bypass group ${n}`);
+    const addCondition = async (n: number, label: RegExp) => {
+      await user.click(within(group(n)).getByRole("button", { name: /add condition/i }));
+      await user.click(screen.getByRole("menuitem", { name: label }));
+    };
+
+    // Both conditions are seeded with an empty list, which the store drops.
+    await addCondition(2, /author address is/i);
+    expect(within(group(2)).getByLabelText(/author addresses/i)).toBeInTheDocument();
+    await addCondition(2, /passed challenge/i);
+    expect(within(group(2)).getByLabelText(/passed challenges/i)).toBeInTheDocument();
+
+    // Clearing a loaded number to retype it keeps the row.
+    const loadedPosts = within(group(1)).getByLabelText(/posts threshold/i);
+    await user.clear(loadedPosts);
+    expect(within(group(1)).getByLabelText(/posts threshold/i)).toBe(loadedPosts);
+    await user.type(loadedPosts, "5");
+    expect(excludes()?.[0]).toEqual({ postCount: 5 });
+
+    // Same for a number condition added from the menu.
+    await addCondition(2, /posts/i);
+    const addedPosts = within(group(2)).getByLabelText(/posts threshold/i);
+    await user.clear(addedPosts);
+    expect(within(group(2)).getByLabelText(/posts threshold/i)).toBe(addedPosts);
+
+    // The x button still removes the row, and the condition can be added again.
+    await user.click(within(group(2)).getByRole("button", { name: /remove condition author address is/i }));
+    expect(within(group(2)).queryByLabelText(/author addresses/i)).not.toBeInTheDocument();
+    await addCondition(2, /author address is/i);
+    expect(within(group(2)).getByLabelText(/author addresses/i)).toBeInTheDocument();
+
+    // Removing another group leaves this group's empty conditions on screen.
+    await user.click(within(group(1)).getByRole("button", { name: /remove group/i }));
+    expect(within(group(1)).getByLabelText(/author addresses/i)).toBeInTheDocument();
+    expect(within(group(1)).getByLabelText(/passed challenges/i)).toBeInTheDocument();
+  });
 });

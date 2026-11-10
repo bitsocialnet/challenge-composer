@@ -22,22 +22,6 @@
   height: var(--row-h);
 }
 
-.modToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-size: var(--font-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  user-select: none;
-}
-
-.modToggle input {
-  width: auto;
-  cursor: pointer;
-  margin: 0;
-}
-
 .pubGrid {
   display: flex;
   flex-wrap: wrap;

@@ -275,4 +275,31 @@ describe("editor", () => {
     expect(within(group(1)).getByLabelText(/author addresses/i)).toBeInTheDocument();
     expect(within(group(1)).getByLabelText(/passed challenges/i)).toBeInTheDocument();
   });
+
+  it("shows and sets whether a rate limit counts successful or failed challenges", async () => {
+    const user = userEvent.setup();
+    renderApp([{ name: "fail", exclude: [{ rateLimit: 5, rateLimitChallengeSuccess: false }] }]);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    const group = () => (JSON.parse(previewEditor.value) as ChallengeSettings)[0]?.exclude?.[0];
+    const counts = screen.getByLabelText(/rate limit counts/i) as HTMLSelectElement;
+    expect(counts.value).toBe("failed");
+
+    await user.selectOptions(counts, "successful");
+    expect(group()).toEqual({ rateLimit: 5, rateLimitChallengeSuccess: true });
+    await user.selectOptions(counts, "failed");
+    expect(group()).toEqual({ rateLimit: 5, rateLimitChallengeSuccess: false });
+
+    // Retyping the limit keeps the choice instead of falling back to the default (successful).
+    const limit = screen.getByLabelText(/rate limit per hour/i);
+    await user.clear(limit);
+    await user.type(limit, "3");
+    expect(group()).toEqual({ rateLimit: 3, rateLimitChallengeSuccess: false });
+    expect((screen.getByLabelText(/rate limit counts/i) as HTMLSelectElement).value).toBe("failed");
+  });
+
+  it("shows the rate limit row when only its counting flag is set", () => {
+    renderApp([{ name: "fail", exclude: [{ rateLimitChallengeSuccess: false }] }]);
+    expect(screen.getByLabelText(/rate limit per hour/i)).toHaveValue(null);
+    expect((screen.getByLabelText(/rate limit counts/i) as HTMLSelectElement).value).toBe("failed");
+  });
 });

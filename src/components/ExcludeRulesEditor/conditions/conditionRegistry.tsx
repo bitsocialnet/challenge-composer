@@ -76,7 +76,8 @@ export const CONDITION_REGISTRY: ConditionEntry[] = [
     type: "rateLimit",
     label: "Rate limit",
     section: "request",
-    isPresent: (e) => typeof e.rateLimit === "number",
+    // The counting flag alone still shows the row, so it is never kept in the JSON out of sight.
+    isPresent: (e) => typeof e.rateLimit === "number" || typeof e.rateLimitChallengeSuccess === "boolean",
     clear: () => ({ rateLimit: undefined, rateLimitChallengeSuccess: undefined }),
     seed: () => ({ rateLimit: 10 }),
     Widget: RateLimitInput

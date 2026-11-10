@@ -19,17 +19,26 @@ function reducer(state: ChallengeSettings, action: SettingsAction): ChallengeSet
       return [...action.settings];
     case "ADD_CHALLENGE":
       return [...state, action.challenge ?? { name: "text-math" }];
-    case "REMOVE_CHALLENGE":
-      return state.filter((_, i) => i !== action.index);
+    case "REMOVE_CHALLENGE": {
+      const { index } = action;
+      const next = state.filter((_, i) => i !== index);
+      return remapChallengeRefs(next, state.length, (i) => (i === index ? undefined : i > index ? i - 1 : i));
+    }
     case "UPDATE_CHALLENGE":
       return state.map((c, i) => (i === action.index ? cleanChallenge({ ...c, ...action.patch }) : c));
     case "MOVE_CHALLENGE": {
-      if (action.from === action.to) return state;
+      const { from, to } = action;
+      if (from === to) return state;
       const next = [...state];
-      const [moved] = next.splice(action.from, 1);
+      const [moved] = next.splice(from, 1);
       if (!moved) return state;
-      next.splice(action.to, 0, moved);
-      return next;
+      next.splice(to, 0, moved);
+      return remapChallengeRefs(next, state.length, (i) => {
+        if (i === from) return to;
+        if (from < to && i > from && i <= to) return i - 1;
+        if (from > to && i >= to && i < from) return i + 1;
+        return i;
+      });
     }
     case "ADD_EXCLUDE":
       return state.map((c, i) => {
@@ -54,6 +63,44 @@ function reducer(state: ChallengeSettings, action: SettingsAction): ChallengeSet
     default:
       return state;
   }
+}
+
+// exclude[].challenges holds positions in the challenges array, so after a move or removal each
+// reference must follow the challenge it named. `newIndexOf` maps an old position to its new one,
+// or to undefined for a removed challenge; indices that were already out of range stay as they are.
+// "Passed every one of these challenges" can never be met once one of them is gone, so that
+// condition is dropped rather than narrowed to the rest (which would widen the bypass), and a group
+// left with no fields at all is dropped too (pkc-js checks `challenges` on its own, so this keeps
+// what the config does).
+function remapChallengeRefs(
+  settings: ChallengeSettings,
+  oldLength: number,
+  newIndexOf: (oldIndex: number) => number | undefined
+): ChallengeSettings {
+  const mapIndex = (i: number) => (i >= 0 && i < oldLength ? newIndexOf(i) : i);
+  return settings.map((c) => {
+    if (!c.exclude?.some((e) => Array.isArray(e.challenges) && e.challenges.length > 0)) return c;
+    const exclude: ChallengeExclude[] = [];
+    for (const e of c.exclude) {
+      if (!Array.isArray(e.challenges) || e.challenges.length === 0) {
+        exclude.push(e);
+        continue;
+      }
+      const mapped = e.challenges.map(mapIndex);
+      if (mapped.every((i): i is number => i !== undefined)) {
+        exclude.push({ ...e, challenges: mapped });
+        continue;
+      }
+      const rest: ChallengeExclude = { ...e };
+      delete rest.challenges;
+      // Cleared conditions stay in the group as undefined keys (see UPDATE_EXCLUDE).
+      if (Object.values(rest).some((v) => v !== undefined)) exclude.push(rest);
+    }
+    const next: CommunityChallengeSetting = { ...c };
+    if (exclude.length > 0) next.exclude = exclude as CommunityChallengeSetting["exclude"];
+    else delete next.exclude;
+    return next;
+  });
 }
 
 function cleanChallenge(c: CommunityChallengeSetting): CommunityChallengeSetting {

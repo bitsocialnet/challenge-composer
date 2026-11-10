@@ -4,11 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { App } from "../App.tsx";
 import { SettingsProvider } from "../state/useSettingsStore.ts";
+import type { ChallengeSettings } from "../types/challenges.ts";
 
-function renderApp() {
+function renderApp(initialState: ChallengeSettings = []) {
   return render(
     <StrictMode>
-      <SettingsProvider initialState={[]}>
+      <SettingsProvider initialState={initialState}>
         <App />
       </SettingsProvider>
     </StrictMode>
@@ -117,5 +118,46 @@ describe("editor", () => {
     await user.click(moveDownButtons[0]!);
     const updated = previewEditor.value;
     expect(updated.indexOf("beta")).toBeLessThan(updated.indexOf("alpha"));
+  });
+
+  it("drops a bypass group with no other condition left when its passed challenge is removed", async () => {
+    const user = userEvent.setup();
+    renderApp([{ name: "alpha" }, { name: "beta", exclude: [{ challenges: [0], postCount: 3 }] }]);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+
+    // The x button leaves `postCount: undefined` behind in the group, which is not a condition.
+    await user.click(screen.getByRole("button", { name: /remove condition posts/i }));
+    await user.click(screen.getAllByRole("button", { name: /^remove$/i })[0]!);
+    expect(JSON.parse(previewEditor.value)).toEqual([{ name: "beta" }]);
+    expect(screen.queryByText(/empty group/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps passed-challenge references on the same challenge after a move or removal", async () => {
+    const user = userEvent.setup();
+    renderApp([
+      { name: "alpha" },
+      { name: "beta" },
+      {
+        name: "gamma",
+        exclude: [{ challenges: [0] }, { role: ["moderator"], challenges: [0] }, { challenges: [0, 1] }]
+      }
+    ]);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    const preview = () => JSON.parse(previewEditor.value) as ChallengeSettings;
+
+    // beta moves above alpha: gamma must still require alpha, now at index 1.
+    await user.click(screen.getAllByRole("button", { name: /move up/i })[1]!);
+    expect(preview().map((c) => c.name)).toEqual(["beta", "alpha", "gamma"]);
+    expect(preview()[2]?.exclude).toEqual([
+      { challenges: [1] },
+      { role: ["moderator"], challenges: [1] },
+      { challenges: [1, 0] }
+    ]);
+
+    // alpha is removed: "passed alpha" can never be met, so the condition goes rather than
+    // pointing at whichever challenge takes alpha's place.
+    await user.click(screen.getAllByRole("button", { name: /^remove$/i })[1]!);
+    expect(preview().map((c) => c.name)).toEqual(["beta", "gamma"]);
+    expect(preview()[1]?.exclude).toEqual([{ role: ["moderator"] }]);
   });
 });

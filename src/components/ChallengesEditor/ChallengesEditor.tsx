@@ -12,7 +12,7 @@ import type { CommunityChallengeSetting } from "../../types/challenges.ts";
 const ChallengeSettingsArraySchema = CommunityChallengeSettingSchema.array();
 
 export function ChallengesEditor() {
-  const { state, dispatch } = useSettings();
+  const { state, dispatch, structureVersion } = useSettings();
   const [collapsed, setCollapsed] = useState<Set<number>>(() => new Set());
 
   const toggle = (index: number) => {
@@ -162,6 +162,7 @@ export function ChallengesEditor() {
               <ChallengeRow
                 index={index}
                 challenge={challenge}
+                resetKey={structureVersion}
                 isOpen={!collapsed.has(index)}
                 canMoveUp={index > 0}
                 canMoveDown={index < state.length - 1}

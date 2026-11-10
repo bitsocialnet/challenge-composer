@@ -9,6 +9,9 @@ import styles from "./ChallengeRow.module.css";
 interface ChallengeRowProps {
   index: number;
   challenge: CommunityChallengeSetting;
+  // Remounts the row's editors when it changes, so their local state is derived from the
+  // challenge now at this position. The header stays mounted to keep focus on its buttons.
+  resetKey: number;
   isOpen: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
@@ -21,6 +24,7 @@ interface ChallengeRowProps {
 export function ChallengeRow({
   index,
   challenge,
+  resetKey,
   isOpen,
   canMoveUp,
   canMoveDown,
@@ -79,7 +83,7 @@ export function ChallengeRow({
       </div>
 
       {isOpen ? (
-        <div id={bodyId} className={styles.body}>
+        <div key={resetKey} id={bodyId} className={styles.body}>
           <ChallengeSourceEditor index={index} challenge={challenge} />
           <OptionsEditor challengeIndex={index} challenge={challenge} />
           <ExcludeRulesEditor challengeIndex={index} challenge={challenge} />

@@ -41,7 +41,7 @@ export function ExcludeGroup({ index, total, exclude, state, challengeIndex, onP
         <span className={styles.groupLabel}>
           Group {index + 1} of {total}
         </span>
-        <button type="button" className="ghost sm" aria-label="Remove group" onClick={onRemove}>
+        <button type="button" className="ghost sm" aria-label="Remove group" data-remove-group onClick={onRemove}>
           × remove group
         </button>
       </div>

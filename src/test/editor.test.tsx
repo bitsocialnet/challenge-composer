@@ -160,4 +160,77 @@ describe("editor", () => {
     expect(preview().map((c) => c.name)).toEqual(["beta", "gamma"]);
     expect(preview()[1]?.exclude).toEqual([{ role: ["moderator"] }]);
   });
+
+  it("re-derives each row's source tab after the rows are reordered", async () => {
+    const user = userEvent.setup();
+    renderApp([{ path: "./my-challenge.js" }, { name: "text-math" }]);
+    await user.click(screen.getAllByRole("button", { name: /move down/i })[0]!);
+
+    const [first, second] = screen.getAllByRole("article");
+    expect(within(first!).getByRole("tab", { name: "Known" })).toHaveAttribute("aria-selected", "true");
+    expect((within(first!).getByLabelText(/^challenge$/i) as HTMLSelectElement).value).toBe("builtin:text-math");
+    expect(within(second!).getByRole("tab", { name: "Custom path" })).toHaveAttribute("aria-selected", "true");
+    expect((within(second!).getByLabelText(/challenge file path/i) as HTMLInputElement).value).toBe("./my-challenge.js");
+  });
+
+  it("re-derives the source tab after the JSON pane replaces a row", () => {
+    renderApp([{ path: "./my-challenge.js" }]);
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    fireEvent.change(previewEditor, { target: { value: '[{"name":"text-math"}]' } });
+    expect(screen.getByRole("tab", { name: "Known" })).toHaveAttribute("aria-selected", "true");
+    expect((screen.getByLabelText(/^challenge$/i) as HTMLSelectElement).value).toBe("builtin:text-math");
+  });
+
+  it("moves focus to the group that takes a removed group's place, or to the add button", async () => {
+    const user = userEvent.setup();
+    renderApp([
+      { name: "alpha", exclude: [{ postCount: 1 }, { postCount: 2 }, { postCount: 3 }] },
+      { name: "beta", exclude: [{ postCount: 4 }, { postCount: 5 }] }
+    ]);
+    const [alpha, beta] = screen.getAllByRole("article") as [HTMLElement, HTMLElement];
+    const group = (row: HTMLElement, n: number) => within(row).getByLabelText(`Bypass group ${n}`);
+    const posts = (row: HTMLElement, n: number) => within(group(row, n)).getByLabelText(/posts threshold/i);
+    const removeGroup = (row: HTMLElement, n: number) =>
+      within(group(row, n)).getByRole("button", { name: /remove group/i });
+    const addGroup = (row: HTMLElement) => within(row).getByRole("button", { name: /add bypass group/i });
+
+    await user.click(removeGroup(alpha, 1));
+    expect(posts(alpha, 1)).toHaveValue(2);
+    expect(removeGroup(alpha, 1)).toHaveFocus();
+
+    // A keyboard user can keep removing groups from there.
+    await user.keyboard("{Enter}");
+    expect(posts(alpha, 1)).toHaveValue(3);
+    expect(removeGroup(alpha, 1)).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(within(alpha).queryByLabelText("Bypass group 1")).not.toBeInTheDocument();
+    expect(addGroup(alpha)).toHaveFocus();
+
+    // No group takes the place of the last one.
+    await user.click(removeGroup(beta, 2));
+    expect(posts(beta, 1)).toHaveValue(4);
+    expect(addGroup(beta)).toHaveFocus();
+  });
+
+  it("re-derives duration units after a challenge move or a group removal", async () => {
+    const user = userEvent.setup();
+    renderApp([
+      { name: "alpha", exclude: [{ firstCommentTimestamp: 86400 }] },
+      { name: "beta", exclude: [{ firstCommentTimestamp: 3600 }, { firstCommentTimestamp: 120 }] }
+    ]);
+    const units = () =>
+      screen.getAllByLabelText(/account age unit/i).map((el) => (el as HTMLSelectElement).value);
+    const amounts = () =>
+      screen.getAllByLabelText(/account age amount/i).map((el) => (el as HTMLInputElement).value);
+    expect(units()).toEqual(["d", "h", "m"]);
+
+    await user.click(screen.getAllByRole("button", { name: /move down/i })[0]!);
+    expect(units()).toEqual(["h", "m", "d"]);
+    expect(amounts()).toEqual(["1", "2", "1"]);
+
+    const firstRow = screen.getAllByRole("article")[0]!;
+    await user.click(within(firstRow).getAllByRole("button", { name: /remove group/i })[0]!);
+    expect(units()).toEqual(["m", "d"]);
+    expect(amounts()).toEqual(["2", "1"]);
+  });
 });

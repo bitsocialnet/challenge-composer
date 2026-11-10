@@ -133,9 +133,33 @@ function cleanExclude(e: ChallengeExclude): ChallengeExclude {
   return next;
 }
 
+// Actions after which a row position can hold a different challenge. Removing one bypass group is
+// not among them: the bypass rules editor keys its groups by identity and handles that itself.
+const STRUCTURAL_ACTIONS: ReadonlySet<SettingsAction["type"]> = new Set([
+  "REPLACE_ALL",
+  "MOVE_CHALLENGE",
+  "REMOVE_CHALLENGE"
+]);
+
+interface StoreState {
+  settings: ChallengeSettings;
+  structureVersion: number;
+}
+
+function storeReducer(store: StoreState, action: SettingsAction): StoreState {
+  const settings = reducer(store.settings, action);
+  if (settings === store.settings) return store;
+  const structureVersion = STRUCTURAL_ACTIONS.has(action.type) ? store.structureVersion + 1 : store.structureVersion;
+  return { settings, structureVersion };
+}
+
 interface SettingsContextValue {
   state: ChallengeSettings;
   dispatch: Dispatch<SettingsAction>;
+  // Changes whenever rows may now show a different challenge. Rows are keyed by position, so
+  // editors that keep local state derived from their data (source tab, duration unit) use it as a
+  // key to remount and derive that state again.
+  structureVersion: number;
 }
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -146,7 +170,10 @@ interface SettingsProviderProps {
 }
 
 export function SettingsProvider({ children, initialState }: SettingsProviderProps) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => initialState ?? hydrateInitialState());
+  const [{ settings: state, structureVersion }, dispatch] = useReducer(storeReducer, undefined, () => ({
+    settings: initialState ?? hydrateInitialState(),
+    structureVersion: 0
+  }));
 
   const firstRender = useRef(true);
   useEffect(() => {
@@ -157,7 +184,7 @@ export function SettingsProvider({ children, initialState }: SettingsProviderPro
     if (saveDraft(state)) clearShareHash();
   }, [state]);
 
-  const value = useMemo(() => ({ state, dispatch }), [state]);
+  const value = useMemo(() => ({ state, dispatch, structureVersion }), [state, structureVersion]);
   return createElement(SettingsContext.Provider, { value }, children);
 }
 

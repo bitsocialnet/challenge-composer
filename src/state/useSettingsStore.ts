@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef, type Dispatch, type ReactNode } from "react";
 import { createElement } from "react";
 import type { ChallengeSettings, ChallengeExclude, CommunityChallengeSetting } from "../types/challenges.ts";
-import { hydrateInitialState, saveDraft } from "./persistence.ts";
+import { clearShareHash, hydrateInitialState, saveDraft } from "./persistence.ts";
 
 export type SettingsAction =
   | { type: "REPLACE_ALL"; settings: ChallengeSettings }
@@ -107,7 +107,7 @@ export function SettingsProvider({ children, initialState }: SettingsProviderPro
       firstRender.current = false;
       return;
     }
-    saveDraft(state);
+    if (saveDraft(state)) clearShareHash();
   }, [state]);
 
   const value = useMemo(() => ({ state, dispatch }), [state]);

@@ -73,6 +73,22 @@ describe("editor", () => {
     expect(knownSelect.value).toBe("builtin:text-math");
   });
 
+  it("shows schema errors for JSON preview text that is not applied", () => {
+    renderApp();
+    const previewEditor = screen.getByRole("textbox", { name: /json settings/i }) as HTMLTextAreaElement;
+    fireEvent.change(previewEditor, { target: { value: '[{"name":"text-math","desciption":"x"}]' } });
+    // The store keeps its previous (empty) value, so the error must come from the typed text.
+    expect(screen.queryByRole("article")).not.toBeInTheDocument();
+    expect(screen.getByText(/desciption/, { selector: "li" })).toBeInTheDocument();
+
+    fireEvent.change(previewEditor, { target: { value: '[{"description":"x"}]' } });
+    expect(screen.getByText(/path or name of challenge has to be defined/i, { selector: "li" })).toBeInTheDocument();
+
+    fireEvent.change(previewEditor, { target: { value: '[{"name":"text-math"}]' } });
+    expect(screen.getByRole("article")).toBeInTheDocument();
+    expect(screen.queryByText(/path or name of challenge has to be defined/i)).not.toBeInTheDocument();
+  });
+
   it("collapses and expands a challenge row", async () => {
     const user = userEvent.setup();
     renderApp();

@@ -6,12 +6,13 @@ interface ConditionRowProps {
   entry: ConditionEntry;
   exclude: ChallengeExclude;
   onPatch: (patch: Partial<ChallengeExclude>) => void;
+  onRemove: () => void;
   state: ChallengeSettings;
   challengeIndex: number;
   connector?: string;
 }
 
-export function ConditionRow({ entry, exclude, onPatch, state, challengeIndex, connector }: ConditionRowProps) {
+export function ConditionRow({ entry, exclude, onPatch, onRemove, state, challengeIndex, connector }: ConditionRowProps) {
   const { Widget } = entry;
   return (
     <div className={styles.row}>
@@ -24,7 +25,7 @@ export function ConditionRow({ entry, exclude, onPatch, state, challengeIndex, c
         type="button"
         className={`ghost sm ${styles.remove}`}
         aria-label={`Remove condition ${entry.label}`}
-        onClick={() => onPatch(entry.clear())}
+        onClick={onRemove}
       >
         ×
       </button>

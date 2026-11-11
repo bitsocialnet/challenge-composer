@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ChallengeExclude, ChallengeSettings } from "../../types/challenges.ts";
 import { Menu, type MenuItem } from "../ui/Menu.tsx";
 import { CONDITION_REGISTRY } from "./conditions/conditionRegistry.tsx";
@@ -17,20 +17,36 @@ interface ExcludeGroupProps {
 }
 
 export function ExcludeGroup({ index, total, exclude, state, challengeIndex, onPatch, onRemove }: ExcludeGroupProps) {
+  // Conditions added from the menu or edited here stay on screen until removed with ×. The store
+  // drops empty values (a new address list, a cleared number), so presence in the data alone would
+  // hide a condition that was just added or is being retyped.
+  const [pinned, setPinned] = useState<ReadonlySet<string>>(() => new Set());
+  const pin = (type: string) => setPinned((prev) => (prev.has(type) ? prev : new Set(prev).add(type)));
+  const unpin = (type: string) =>
+    setPinned((prev) => {
+      if (!prev.has(type)) return prev;
+      const next = new Set(prev);
+      next.delete(type);
+      return next;
+    });
+
   const activeEntries = useMemo(
-    () => CONDITION_REGISTRY.filter((entry) => entry.isPresent(exclude)),
-    [exclude]
+    () => CONDITION_REGISTRY.filter((entry) => pinned.has(entry.type) || entry.isPresent(exclude)),
+    [exclude, pinned]
   );
 
   const menuItems: MenuItem[] = useMemo(
     () =>
-      CONDITION_REGISTRY.filter((entry) => !entry.isPresent(exclude)).map((entry) => ({
+      CONDITION_REGISTRY.filter((entry) => !pinned.has(entry.type) && !entry.isPresent(exclude)).map((entry) => ({
         id: entry.type,
         label: entry.label,
         section: SECTION_LABELS[entry.section],
-        onSelect: () => onPatch(entry.seed())
+        onSelect: () => {
+          pin(entry.type);
+          onPatch(entry.seed());
+        }
       })),
-    [exclude, onPatch]
+    [exclude, onPatch, pinned]
   );
 
   const isEmpty = activeEntries.length === 0;
@@ -41,7 +57,7 @@ export function ExcludeGroup({ index, total, exclude, state, challengeIndex, onP
         <span className={styles.groupLabel}>
           Group {index + 1} of {total}
         </span>
-        <button type="button" className="ghost sm" aria-label="Remove group" onClick={onRemove}>
+        <button type="button" className="ghost sm" aria-label="Remove group" data-remove-group onClick={onRemove}>
           × remove group
         </button>
       </div>
@@ -57,7 +73,14 @@ export function ExcludeGroup({ index, total, exclude, state, challengeIndex, onP
               key={entry.type}
               entry={entry}
               exclude={exclude}
-              onPatch={onPatch}
+              onPatch={(patch) => {
+                pin(entry.type);
+                onPatch(patch);
+              }}
+              onRemove={() => {
+                unpin(entry.type);
+                onPatch(entry.clear());
+              }}
               state={state}
               challengeIndex={challengeIndex}
               connector={i === 0 ? "WHEN" : "AND"}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef, type Dispatch, type ReactNode } from "react";
 import { createElement } from "react";
 import type { ChallengeSettings, ChallengeExclude, CommunityChallengeSetting } from "../types/challenges.ts";
-import { hydrateInitialState, saveDraft } from "./persistence.ts";
+import { clearShareHash, hydrateInitialState, saveDraft } from "./persistence.ts";
 
 export type SettingsAction =
   | { type: "REPLACE_ALL"; settings: ChallengeSettings }
@@ -19,17 +19,26 @@ function reducer(state: ChallengeSettings, action: SettingsAction): ChallengeSet
       return [...action.settings];
     case "ADD_CHALLENGE":
       return [...state, action.challenge ?? { name: "text-math" }];
-    case "REMOVE_CHALLENGE":
-      return state.filter((_, i) => i !== action.index);
+    case "REMOVE_CHALLENGE": {
+      const { index } = action;
+      const next = state.filter((_, i) => i !== index);
+      return remapChallengeRefs(next, state.length, (i) => (i === index ? undefined : i > index ? i - 1 : i));
+    }
     case "UPDATE_CHALLENGE":
       return state.map((c, i) => (i === action.index ? cleanChallenge({ ...c, ...action.patch }) : c));
     case "MOVE_CHALLENGE": {
-      if (action.from === action.to) return state;
+      const { from, to } = action;
+      if (from === to) return state;
       const next = [...state];
-      const [moved] = next.splice(action.from, 1);
+      const [moved] = next.splice(from, 1);
       if (!moved) return state;
-      next.splice(action.to, 0, moved);
-      return next;
+      next.splice(to, 0, moved);
+      return remapChallengeRefs(next, state.length, (i) => {
+        if (i === from) return to;
+        if (from < to && i > from && i <= to) return i - 1;
+        if (from > to && i >= to && i < from) return i + 1;
+        return i;
+      });
     }
     case "ADD_EXCLUDE":
       return state.map((c, i) => {
@@ -54,6 +63,44 @@ function reducer(state: ChallengeSettings, action: SettingsAction): ChallengeSet
     default:
       return state;
   }
+}
+
+// exclude[].challenges holds positions in the challenges array, so after a move or removal each
+// reference must follow the challenge it named. `newIndexOf` maps an old position to its new one,
+// or to undefined for a removed challenge; indices that were already out of range stay as they are.
+// "Passed every one of these challenges" can never be met once one of them is gone, so that
+// condition is dropped rather than narrowed to the rest (which would widen the bypass), and a group
+// left with no fields at all is dropped too (pkc-js checks `challenges` on its own, so this keeps
+// what the config does).
+function remapChallengeRefs(
+  settings: ChallengeSettings,
+  oldLength: number,
+  newIndexOf: (oldIndex: number) => number | undefined
+): ChallengeSettings {
+  const mapIndex = (i: number) => (i >= 0 && i < oldLength ? newIndexOf(i) : i);
+  return settings.map((c) => {
+    if (!c.exclude?.some((e) => Array.isArray(e.challenges) && e.challenges.length > 0)) return c;
+    const exclude: ChallengeExclude[] = [];
+    for (const e of c.exclude) {
+      if (!Array.isArray(e.challenges) || e.challenges.length === 0) {
+        exclude.push(e);
+        continue;
+      }
+      const mapped = e.challenges.map(mapIndex);
+      if (mapped.every((i): i is number => i !== undefined)) {
+        exclude.push({ ...e, challenges: mapped });
+        continue;
+      }
+      const rest: ChallengeExclude = { ...e };
+      delete rest.challenges;
+      // Cleared conditions stay in the group as undefined keys (see UPDATE_EXCLUDE).
+      if (Object.values(rest).some((v) => v !== undefined)) exclude.push(rest);
+    }
+    const next: CommunityChallengeSetting = { ...c };
+    if (exclude.length > 0) next.exclude = exclude as CommunityChallengeSetting["exclude"];
+    else delete next.exclude;
+    return next;
+  });
 }
 
 function cleanChallenge(c: CommunityChallengeSetting): CommunityChallengeSetting {
@@ -86,9 +133,33 @@ function cleanExclude(e: ChallengeExclude): ChallengeExclude {
   return next;
 }
 
+// Actions after which a row position can hold a different challenge. Removing one bypass group is
+// not among them: the bypass rules editor keys its groups by identity and handles that itself.
+const STRUCTURAL_ACTIONS: ReadonlySet<SettingsAction["type"]> = new Set([
+  "REPLACE_ALL",
+  "MOVE_CHALLENGE",
+  "REMOVE_CHALLENGE"
+]);
+
+interface StoreState {
+  settings: ChallengeSettings;
+  structureVersion: number;
+}
+
+function storeReducer(store: StoreState, action: SettingsAction): StoreState {
+  const settings = reducer(store.settings, action);
+  if (settings === store.settings) return store;
+  const structureVersion = STRUCTURAL_ACTIONS.has(action.type) ? store.structureVersion + 1 : store.structureVersion;
+  return { settings, structureVersion };
+}
+
 interface SettingsContextValue {
   state: ChallengeSettings;
   dispatch: Dispatch<SettingsAction>;
+  // Changes whenever rows may now show a different challenge. Rows are keyed by position, so
+  // editors that keep local state derived from their data (source tab, duration unit) use it as a
+  // key to remount and derive that state again.
+  structureVersion: number;
 }
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -99,7 +170,10 @@ interface SettingsProviderProps {
 }
 
 export function SettingsProvider({ children, initialState }: SettingsProviderProps) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => initialState ?? hydrateInitialState());
+  const [{ settings: state, structureVersion }, dispatch] = useReducer(storeReducer, undefined, () => ({
+    settings: initialState ?? hydrateInitialState(),
+    structureVersion: 0
+  }));
 
   const firstRender = useRef(true);
   useEffect(() => {
@@ -107,10 +181,10 @@ export function SettingsProvider({ children, initialState }: SettingsProviderPro
       firstRender.current = false;
       return;
     }
-    saveDraft(state);
+    if (saveDraft(state)) clearShareHash();
   }, [state]);
 
-  const value = useMemo(() => ({ state, dispatch }), [state]);
+  const value = useMemo(() => ({ state, dispatch, structureVersion }), [state, structureVersion]);
   return createElement(SettingsContext.Provider, { value }, children);
 }
 

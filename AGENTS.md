@@ -25,3 +25,4 @@ State (drafts, share links) lives in `localStorage` of whichever origin you open
 - **After any source edit, re-run `npm run build`** before reporting the task complete. `dist/index.html` is the shipping artifact; it does not update on its own, so stale builds will hide your changes from anyone who opens the file.
 - `vite-plugin-singlefile` inlines everything; do not add external `<script src>` / `<link href>` references, and do not split chunks — it defeats the single-file guarantee.
 - `npm test` and `npm run typecheck` remain the verification commands.
+- Consult [Modern Web Guidance](.agents/skills/modern-web-guidance/SKILL.md) when choosing native controls, keyboard focus, browser storage, or browser-sensitive layout.

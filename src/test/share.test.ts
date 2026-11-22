@@ -34,4 +34,26 @@ describe("share encode/decode", () => {
     const decoded = decodeShareHash(url.split("#")[1] ?? "");
     expect(decoded).toEqual(COMPLEX);
   });
+
+  it("rejects payloads whose shape the editor cannot render", () => {
+    const malformed = [
+      [null],
+      [{ name: "x", exclude: [null] }],
+      [{ name: "x", exclude: {} }],
+      [{ name: "x", exclude: [{ role: "moderator" }] }],
+      [{ name: "x", exclude: [{ role: [{}] }] }],
+      [{ name: "x", exclude: [{ role: [1] }] }]
+    ];
+    for (const payload of malformed) {
+      expect(decodeShareHash(encodeShareHash(payload as unknown as ChallengeSettings))).toBeUndefined();
+    }
+  });
+
+  it("keeps settings that are still being edited", () => {
+    const inProgress = [
+      { description: "no name or path yet" },
+      { name: "x", exclude: [{ community: { addresses: [], maxCommentCids: 100 } }] }
+    ] as unknown as ChallengeSettings;
+    expect(decodeShareHash(encodeShareHash(inProgress))).toEqual(inProgress);
+  });
 });

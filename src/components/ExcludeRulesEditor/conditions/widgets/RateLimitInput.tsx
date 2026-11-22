@@ -23,15 +23,17 @@ export function RateLimitInput({ exclude, onPatch }: WidgetProps) {
           onPatch({ rateLimit: n });
         }}
       />
-      <span className={styles.reputationLabel}>per hour</span>
-      <label className={styles.modToggle}>
-        <input
-          type="checkbox"
-          checked={exclude.rateLimitChallengeSuccess === true}
-          onChange={(e) => onPatch({ rateLimitChallengeSuccess: e.target.checked || undefined })}
-        />
-        count only successful challenges
-      </label>
+      <span className={styles.reputationLabel}>per hour, counting</span>
+      {/* pkc-js counts successful challenges unless rateLimitChallengeSuccess is false. */}
+      <select
+        className={styles.unitSelect}
+        value={exclude.rateLimitChallengeSuccess === false ? "failed" : "successful"}
+        aria-label="Rate limit counts"
+        onChange={(e) => onPatch({ rateLimitChallengeSuccess: e.target.value === "successful" })}
+      >
+        <option value="successful">successful challenges</option>
+        <option value="failed">failed challenges</option>
+      </select>
     </div>
   );
 }

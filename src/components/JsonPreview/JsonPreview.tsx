@@ -6,6 +6,7 @@ import { CommunityChallengeSettingSchema } from "../../pkc-schema.ts";
 import { useSettings } from "../../state/useSettingsStore.ts";
 
 type ValidationResult = ReturnType<ReturnType<typeof CommunityChallengeSettingSchema.array>["safeParse"]>;
+type ValidationIssues = NonNullable<ValidationResult["error"]>["issues"];
 
 const ChallengeSettingsArraySchema = CommunityChallengeSettingSchema.array();
 
@@ -19,6 +20,9 @@ export function JsonPreview({ settings, validation }: JsonPreviewProps) {
   const canonicalFromState = useMemo(() => stringifyJson(settings), [settings]);
   const [text, setText] = useState(canonicalFromState);
   const [parseError, setParseError] = useState<string | null>(null);
+  // Schema issues of textarea text that parsed but was not applied to the store.
+  // `validation` only describes the store, which still holds the last valid value.
+  const [draftIssues, setDraftIssues] = useState<ValidationIssues | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Canonical form of the last state we either rendered-from or dispatched-to.
@@ -32,6 +36,7 @@ export function JsonPreview({ settings, validation }: JsonPreviewProps) {
       lastKnownCanonical.current = canonicalFromState;
       setText(canonicalFromState);
       setParseError(null);
+      setDraftIssues(null);
     }
   }, [canonicalFromState]);
 
@@ -41,15 +46,18 @@ export function JsonPreview({ settings, validation }: JsonPreviewProps) {
     const { value, errors } = parseJsonc(next);
     if (errors.length) {
       setParseError(`JSONC parse error: ${errors.join(", ")}`);
+      setDraftIssues(null);
       return;
     }
     const parsed = ChallengeSettingsArraySchema.safeParse(value);
     if (!parsed.success) {
-      // Let validation (below) surface structural issues; don't block typing.
+      // Show the typed text's issues (below); don't block typing.
       setParseError(null);
+      setDraftIssues(parsed.error.issues);
       return;
     }
     setParseError(null);
+    setDraftIssues(null);
     const nextCanonical = stringifyJson(parsed.data);
     if (nextCanonical === lastKnownCanonical.current) return;
     lastKnownCanonical.current = nextCanonical;
@@ -66,6 +74,8 @@ export function JsonPreview({ settings, validation }: JsonPreviewProps) {
     }
   };
 
+  const issues = draftIssues ?? (validation.success ? null : validation.error.issues);
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -75,9 +85,9 @@ export function JsonPreview({ settings, validation }: JsonPreviewProps) {
         </button>
       </header>
       {parseError ? <pre className={styles.parseError}>{parseError}</pre> : null}
-      {!parseError && !validation.success ? (
+      {!parseError && issues ? (
         <ul className={styles.errors}>
-          {validation.error.issues.map((issue, i) => (
+          {issues.map((issue, i) => (
             <li key={i}>
               <code>{issue.path.map(String).join(".") || "(root)"}</code>: {issue.message}
             </li>

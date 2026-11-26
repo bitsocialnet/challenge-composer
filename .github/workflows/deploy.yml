@@ -22,7 +22,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry_1.outputs.page_url || steps.deployment_retry_2.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,5 +44,22 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
+      # deploy-pages looks the artifact up once, and the artifact service can
+      # take seconds (up to ~1 min) to list a just-finalized upload, so the
+      # lookup fails with "No artifacts named github-pages". Retry only the
+      # deploy: a second upload makes the lookup fail with "Multiple artifacts".
+      # Drop the retries once actions/deploy-pages#455 (or #451's fix) ships.
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - if: steps.deployment.outcome == 'failure'
+        run: sleep 15
+      - id: deployment_retry_1
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - if: steps.deployment_retry_1.outcome == 'failure'
+        run: sleep 60
+      - id: deployment_retry_2
+        if: steps.deployment_retry_1.outcome == 'failure'
         uses: actions/deploy-pages@v4

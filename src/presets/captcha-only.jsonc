@@ -9,7 +9,7 @@
       "height": "96"
     },
     "exclude": [
-      { "role": ["moderator", "admin", "owner"] }
+      { "roles": ["moderator", "admin", "owner"] }
     ]
   }
 ]

@@ -7,7 +7,7 @@ const SAMPLE: ChallengeSettings = [
     name: "captcha-canvas-v3",
     description: "Solve to post",
     options: { characters: "6" },
-    exclude: [{ role: ["moderator"] }]
+    exclude: [{ roles: ["moderator"] }]
   }
 ];
 

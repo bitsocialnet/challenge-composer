@@ -69,8 +69,9 @@ function cleanChallenge(c: CommunityChallengeSetting): CommunityChallengeSetting
 
 function cleanExclude(e: ChallengeExclude): ChallengeExclude {
   const next: ChallengeExclude = { ...e };
-  if (next.role && next.role.length === 0) delete next.role;
-  if (next.address && next.address.length === 0) delete next.address;
+  if (next.roles && next.roles.length === 0) delete next.roles;
+  if (next.publicKeys && next.publicKeys.length === 0) delete next.publicKeys;
+  if (next.names && next.names.length === 0) delete next.names;
   if (next.challenges && next.challenges.length === 0) delete next.challenges;
   if (next.publicationType && Object.keys(next.publicationType).length === 0) delete next.publicationType;
   if (next.community) {

@@ -35,12 +35,25 @@ describe("ChallengeSettings schema", () => {
     const result = CommunityChallengeSettingSchema.safeParse({
       name: "captcha-canvas-v3",
       exclude: [
-        { role: ["moderator"] },
+        { roles: ["moderator"] },
         { rateLimit: 5, rateLimitChallengeSuccess: false },
         { publicationType: { reply: true } }
       ]
     });
     expect(result.success).toBe(true);
+  });
+
+  it("accepts author public keys and names", () => {
+    const result = CommunityChallengeSettingSchema.safeParse({
+      name: "captcha-canvas-v3",
+      exclude: [{ publicKeys: ["12D3KooWG3XbzoVyAE6Y9vHZKF64Yuuu4TjdgQKedk14iYmTEPWu"] }, { names: ["example.bso"] }]
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects the exclude role and address fields pkc-js renamed and removed", () => {
+    expect(CommunityChallengeSettingSchema.safeParse({ name: "x", exclude: [{ role: ["moderator"] }] }).success).toBe(false);
+    expect(CommunityChallengeSettingSchema.safeParse({ name: "x", exclude: [{ address: ["example.bso"] }] }).success).toBe(false);
   });
 
   it("validates all bundled presets", () => {

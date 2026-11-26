@@ -50,7 +50,7 @@ A JSON array of `CommunityChallengeSetting`, the same shape pkc-js accepts in `c
     "difficulty": "2"
   },
   "exclude": [                        // any matching group lets the author bypass
-    { "role": ["moderator", "admin", "owner"] },
+    { "roles": ["moderator", "admin", "owner"] },
     { "postCount": 10, "firstCommentTimestamp": 604800, "rateLimit": 3, "rateLimitChallengeSuccess": true },
     { "publicationType": { "reply": true } }
   ]
@@ -69,7 +69,7 @@ Anything not in that list — `captcha-canvas-v3`, `evm-contract-call`, `mintpas
 
 ## Features
 
-- **Seedit-style editor**: add/remove/reorder challenges, edit name/path/options/description/pendingApproval, manage exclude rules (roles, post/reply counts, account age, rate limit, publication type, author addresses).
+- **Seedit-style editor**: add/remove/reorder challenges, edit name/path/options/description/pendingApproval, manage exclude rules (roles, post/reply counts, account age, rate limit, publication type, author public keys and names).
 - **Presets dropdown**: ships with `5chan board defaults`, `captcha only`, and `empty`.
 - **Paste JSONC** dialog, **file upload** (`.json` / `.jsonc`), and **download** as `challenges.jsonc`.
 - **Export CLI**: emits a `bitsocial challenge install …` + `bitsocial community edit …` shell script tailored to the current settings, flagging unknown challenge names with a TODO for the operator.
@@ -98,6 +98,6 @@ src/
 
 ## TODO
 
-- **Scenario simulator.** For each challenge in the current settings, simulate which publications and author profiles would be challenged vs. excluded, across a library of mock authors (brand-new account, moderator, high-karma user, rate-limited user, wallet holder, banned author address, …). Should exercise every branch of `ChallengeExcludeSchema` — role / postCount / replyCount / postScore / replyScore / firstCommentTimestamp / rateLimit / rateLimitChallengeSuccess / publicationType / address / community / challenges.
+- **Scenario simulator.** For each challenge in the current settings, simulate which publications and author profiles would be challenged vs. excluded, across a library of mock authors (brand-new account, moderator, high-karma user, rate-limited user, wallet holder, banned author address, …). Should exercise every branch of `ChallengeExcludeSchema` — roles / postCount / replyCount / postScore / replyScore / firstCommentTimestamp / rateLimit / rateLimitChallengeSuccess / publicationType / publicKeys / names / community / challenges.
 - Inline zod validation errors attached to the specific offending field (currently shown in the JSON preview panel only).
 - Drag-and-drop reordering for challenges (the reducer has `MOVE_CHALLENGE` and Move up/down buttons; drag handles are not yet wired up).

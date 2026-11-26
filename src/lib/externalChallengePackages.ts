@@ -9,10 +9,12 @@
 // matching devDependencies in package.json.
 export const EXTERNAL_CHALLENGE_PACKAGES = [
   "@bitsocial/ai-moderation-challenge",
+  "@bitsocial/base64-challenge",
   "@bitsocial/captcha-canvas-challenge",
   "@bitsocial/evm-contract-challenge",
   "@bitsocial/flags-challenge",
   "@bitsocial/r9k-challenge",
+  "@bitsocial/tipping-challenge",
   "@bitsocial/voucher-challenge",
   "@bitsocial/wordfilter-challenge"
 ] as const;

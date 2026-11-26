@@ -31,6 +31,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: 'npm' }
       - run: npm ci
+      # npm ci's `prepare` installs the dev pre-push hook. It refreshes the
+      # challenge manifest from bitsocialnet, leaves the tree dirty and aborts
+      # release-it's push, so CI would never tag and would deploy uncommitted
+      # package versions. CI releases and builds master as committed.
+      - name: Remove dev pre-push hook
+        run: rm -f .git/hooks/pre-push
       - name: Configure git author
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"

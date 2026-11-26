@@ -21,7 +21,7 @@ export function summarize(challenge: CommunityChallengeSetting): string {
 
 function summarizeGroup(g: ChallengeExclude): string {
   const bits: string[] = [];
-  if (g.role && g.role.length > 0) bits.push(g.role.join("/"));
+  if (g.roles && g.roles.length > 0) bits.push(g.roles.join("/"));
   if (typeof g.postCount === "number") bits.push(`${g.postCount}+ posts`);
   if (typeof g.replyCount === "number") bits.push(`${g.replyCount}+ replies`);
   if (typeof g.postScore === "number") bits.push(`post ≥${g.postScore}`);
@@ -34,9 +34,8 @@ function summarizeGroup(g: ChallengeExclude): string {
     else bits.push(`age ≥${s}s`);
   }
   if (typeof g.rateLimit === "number") bits.push(`rate ${g.rateLimit}/h`);
-  if (g.address && g.address.length > 0) {
-    bits.push(`${g.address.length} author${g.address.length === 1 ? "" : "s"}`);
-  }
+  const authors = (g.publicKeys?.length ?? 0) + (g.names?.length ?? 0);
+  if (authors > 0) bits.push(`${authors} author${authors === 1 ? "" : "s"}`);
   if (g.challenges && g.challenges.length > 0) {
     bits.push(`passed #${g.challenges.map((i) => i + 1).join(",")}`);
   }

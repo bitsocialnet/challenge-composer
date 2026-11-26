@@ -10,7 +10,7 @@
       "error": "Too many failed attempts. Try again later."
     },
     "exclude": [
-      { "role": ["moderator", "admin", "owner"] },
+      { "roles": ["moderator", "admin", "owner"] },
       { "rateLimit": 5, "rateLimitChallengeSuccess": false }
     ]
   },
@@ -22,7 +22,7 @@
       "error": "Comment edits are disabled on this board."
     },
     "exclude": [
-      { "role": ["moderator", "admin", "owner"] },
+      { "roles": ["moderator", "admin", "owner"] },
       {
         "publicationType": {
           "post": true,
@@ -47,7 +47,7 @@
     },
     "exclude": [
       { "publicationType": { "reply": true } },
-      { "role": ["moderator", "admin", "owner"] },
+      { "roles": ["moderator", "admin", "owner"] },
       {
         "postCount": 10,
         "firstCommentTimestamp": 604800,
@@ -75,7 +75,7 @@
     },
     "exclude": [
       { "publicationType": { "post": true } },
-      { "role": ["moderator", "admin", "owner"] },
+      { "roles": ["moderator", "admin", "owner"] },
       {
         "postCount": 10,
         "firstCommentTimestamp": 604800,

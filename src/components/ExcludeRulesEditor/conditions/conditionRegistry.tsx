@@ -3,7 +3,7 @@ import { makeNumberWidget } from "./widgets/NumberInput.tsx";
 import { DurationInput } from "./widgets/DurationInput.tsx";
 import { RateLimitInput } from "./widgets/RateLimitInput.tsx";
 import { RoleChips } from "./widgets/RoleChips.tsx";
-import { AddressListInput } from "./widgets/AddressListInput.tsx";
+import { makeAuthorListWidget } from "./widgets/AddressListInput.tsx";
 import { PublicationTypeChecks } from "./widgets/PublicationTypeChecks.tsx";
 import { ChallengesRefInput } from "./widgets/ChallengesRefInput.tsx";
 import { CommunityReputationInput } from "./widgets/CommunityReputationInput.tsx";
@@ -55,12 +55,12 @@ export const CONDITION_REGISTRY: ConditionEntry[] = [
     Widget: DurationInput
   },
   {
-    type: "role",
+    type: "roles",
     label: "Role is",
     section: "request",
-    isPresent: (e) => Array.isArray(e.role) && e.role.length > 0,
-    clear: () => ({ role: undefined }),
-    seed: () => ({ role: ["moderator"] }),
+    isPresent: (e) => Array.isArray(e.roles) && e.roles.length > 0,
+    clear: () => ({ roles: undefined }),
+    seed: () => ({ roles: ["moderator"] }),
     Widget: RoleChips
   },
   {
@@ -82,13 +82,22 @@ export const CONDITION_REGISTRY: ConditionEntry[] = [
     Widget: RateLimitInput
   },
   {
-    type: "address",
-    label: "Author address is",
+    type: "publicKeys",
+    label: "Author public key is",
     section: "request",
-    isPresent: (e) => Array.isArray(e.address) && e.address.length > 0,
-    clear: () => ({ address: undefined }),
-    seed: () => ({ address: [] }),
-    Widget: AddressListInput
+    isPresent: (e) => Array.isArray(e.publicKeys) && e.publicKeys.length > 0,
+    clear: () => ({ publicKeys: undefined }),
+    seed: () => ({ publicKeys: [] }),
+    Widget: makeAuthorListWidget("publicKeys", "12D3KooW…", "Author public keys")
+  },
+  {
+    type: "names",
+    label: "Author name is",
+    section: "request",
+    isPresent: (e) => Array.isArray(e.names) && e.names.length > 0,
+    clear: () => ({ names: undefined }),
+    seed: () => ({ names: [] }),
+    Widget: makeAuthorListWidget("names", "name.bso…", "Author names")
   },
   {
     type: "challenges",

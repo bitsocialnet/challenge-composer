@@ -7,7 +7,7 @@ const COMPLEX: ChallengeSettings = [
     name: "captcha-canvas-v3",
     description: "nontrivial description with unicode ✓ 日本語",
     options: { characters: "6", width: "280" },
-    exclude: [{ role: ["moderator", "owner"] }, { rateLimit: 5, rateLimitChallengeSuccess: false }]
+    exclude: [{ roles: ["moderator", "owner"] }, { rateLimit: 5, rateLimitChallengeSuccess: false }]
   },
   { name: "text-math" }
 ];
